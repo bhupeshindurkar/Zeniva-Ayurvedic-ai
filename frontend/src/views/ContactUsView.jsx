@@ -247,6 +247,32 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
     const fallbackTicket = `ZEN-TKT-${Math.floor(100000 + Math.random() * 900000)}`;
 
     try {
+      // 1. Direct real-time email notification to contact.zeniva@gmail.com
+      try {
+        await fetch('https://formsubmit.co/ajax/contact.zeniva@gmail.com', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            _subject: `🚨 [Zeniva AI Ticket] ${formData.inquiryType}: ${formData.subject?.trim() || 'Patient Problem/Inquiry'} (${fallbackTicket})`,
+            Ticket_ID: fallbackTicket,
+            Patient_Name: formData.fullName.trim(),
+            Patient_Email: formData.email.trim(),
+            Patient_Phone: formData.phone.trim() || 'Not Provided',
+            Category: formData.inquiryType || 'Clinical Consultation',
+            User_Role: currentUser?.role || 'patient',
+            Subject: formData.subject?.trim() || `${formData.inquiryType} Ticket`,
+            Message: formData.message.trim(),
+            _template: 'table'
+          })
+        });
+      } catch (mailErr) {
+        console.warn("Direct email dispatch note:", mailErr);
+      }
+
+      // 2. Register ticket in backend database & trigger server-side handlers
       const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://127.0.0.1:8000'
         : '';
