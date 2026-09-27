@@ -3527,17 +3527,17 @@ export const AdminDashboard = ({
                     onClick={() => {
                       setBroadcastVideoInput({
                         title: 'Nadi Pariksha & Pulse Diagnosis Demonstration',
-                        sanskrit: '॥ नाडी परीक्षा एवं त्रिदोष परीक्षण ॥',
+                        sanskrit: '॥ नाडी परीक्षा एवं स्वास्थ्य परीक्षण ॥',
                         duration: '5:40 Mins · Clinical Tour',
                         url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-                        desc: 'Clinical demonstration of radial pulse reading, Vata-Pitta-Kapha waveform tracking, and therapeutic selection.',
+                        desc: 'Clinical demonstration of radial pulse reading, physiological waveform tracking, and therapeutic selection.',
                         enabled: true
                       });
                       showToast('Loaded Preset: Pulse Diagnosis Demonstration');
                     }}
                     className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-semibold text-[10px] text-left transition-all cursor-pointer flex flex-col justify-between"
                   >
-                    <span>🩺 Pulse & Tridosha</span>
+                    <span>🩺 Pulse & Health Tour</span>
                     <span className="text-[9px] text-amber-600 font-mono">5:40 Mins · Clinical</span>
                   </button>
                 </div>
@@ -4638,11 +4638,11 @@ export const AdminDashboard = ({
                   onChange={(e) => setEditingPatient({ ...editingPatient, prakriti: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-stone-200 text-stone-900 bg-white font-medium"
                 >
-                  <option value="🌙 Stress & Sleep Wellness Profile">🌙 Stress & Sleep Wellness Profile (Vata-Pitta)</option>
-                  <option value="🔥 Digestion, Acidity & Gut Health Profile">🔥 Digestion, Acidity & Gut Health Profile (Pitta-Samana)</option>
-                  <option value="⚡ Joint Mobility & Stamina Care Profile">⚡ Joint Mobility & Stamina Care Profile (Vata-Shleshaka)</option>
-                  <option value="🍃 Immunity & Metabolic Vitality Profile">🍃 Immunity & Metabolic Vitality Profile (Kapha-Agni)</option>
-                  <option value="🍃 Respiratory Defense & Cold Relief Profile">🍃 Respiratory Defense & Cold Relief Profile (Kapha-Prana)</option>
+                  <option value="🌙 Stress & Sleep Wellness Profile">🌙 Stress & Sleep Wellness Profile</option>
+                  <option value="🔥 Digestion, Acidity & Gut Health Profile">🔥 Digestion, Acidity & Gut Health Profile</option>
+                  <option value="⚡ Joint Mobility & Stamina Care Profile">⚡ Joint Mobility & Stamina Care Profile</option>
+                  <option value="🍃 Immunity & Metabolic Vitality Profile">🍃 Immunity & Metabolic Vitality Profile</option>
+                  <option value="🍃 Respiratory Defense & Cold Relief Profile">🍃 Respiratory Defense & Cold Relief Profile</option>
                 </select>
               </div>
 

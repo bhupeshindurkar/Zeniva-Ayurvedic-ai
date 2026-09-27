@@ -8,11 +8,34 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
+// Universal Sanitizer: Strictly ensures 'Vata', 'Pitta', 'Kapha', and 'Tridosha' are NEVER displayed
+export const sanitizeAyurvedicJargon = (str) => {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .replace(/\b(Vata-Pitta-Kapha|Vata-Pitta|Pitta-Kapha|Kapha-Vata|Vata-Shleshaka|Pitta-Samana|Kapha-Agni|Kapha-Prana)\b/gi, 'Metabolic Balance')
+    .replace(/\b(Vata\s+Dosha|Pitta\s+Dosha|Kapha\s+Dosha|Tridosha)\b/gi, 'Vitality & Health')
+    .replace(/\b(Vata|Pitta|Kapha)\b/gi, (match) => {
+      const m = match.toLowerCase();
+      if (m === 'vata') return 'Mobility & Energy';
+      if (m === 'pitta') return 'Digestive Heat';
+      if (m === 'kapha') return 'Immune Stability';
+      return 'Wellness';
+    })
+    .replace(/त्रिदोष|वात-पित्त-कफ|वात-पित्त|पित्त-कफ|कफ-वात|वात\s*दोष|पित्त\s*दोष|कफ\s*दोष/g, 'स्वास्थ्य संतुलन')
+    .replace(/वात|पित्त|कफ/g, (match) => {
+      if (match === 'वात') return 'ऊर्जा व गती';
+      if (match === 'पित्त') return 'पाचक उष्णता';
+      if (match === 'कफ') return 'रोगप्रतिकारशक्ती';
+      return 'संतुलन';
+    });
+};
+
 // Utility to render markdown cleanly without raw symbols like **, ##, ###, ---
 const renderCleanFormattedText = (rawText) => {
   if (!rawText) return null;
+  const sanitizedText = sanitizeAyurvedicJargon(rawText);
 
-  const lines = rawText.split('\n');
+  const lines = sanitizedText.split('\n');
   return (
     <div className="space-y-2 font-sans text-stone-800 leading-relaxed text-xs sm:text-[13px]">
       {lines.map((line, idx) => {
@@ -609,33 +632,33 @@ export const AyurvedicAIChatModal = ({
     try {
       const qLower = (userQuery || '').toLowerCase();
       let concern = "General Ayurvedic Consultation";
-      let dosha = "Tridosha Balance";
+      let dosha = "Holistic Health Balance";
 
       if (/khasi|kasa|cough|kaph|phlegm|cold|sardi|throat|shwas|khokla/.test(qLower)) {
         concern = "Cough & Respiratory Congestion (कास विकार)";
-        dosha = "Kapha-Vata Prakopa";
+        dosha = "Respiratory & Mucus Sensitivity";
       } else if (/pitta|acidity|acid|heartburn|burning|pitt|daha|ulcer|gastric/.test(qLower)) {
         concern = "Hyperacidity & Digestive Heat (अम्लपित्त)";
-        dosha = "Pitta Vriddhi / Teekshna Agni";
+        dosha = "Gastric Heat & Acidity";
       } else if (/sandhi|joint|knee|pain|arthritis|stiff|dardi|vata|backache|sciatica/.test(qLower)) {
-        concern = "Joint Mobility & Vata Discomfort (संधिगत वात)";
-        dosha = "Vata Prakopa / Asthidhatu";
+        concern = "Joint Mobility & Muscle Discomfort (संधिशूल)";
+        dosha = "Joint Stiffness & Muscle Fatigue";
       } else if (/skin|twak|itching|rash|acne|pimple|eczema|kandu|kushtha/.test(qLower)) {
         concern = "Skin & Blood Purification (त्वक् विकार)";
-        dosha = "Rakta-Pitta Dushti";
+        dosha = "Dermal Sensitivity & Heat";
       } else if (/sleep|stress|tension|anxiety|insomnia|nindra|headache|shiras/.test(qLower)) {
         concern = "Stress Relief & Sleep Wellness (अनिद्रा / मानसरोग)";
-        dosha = "Prana Vata / Tarpaka Kapha";
+        dosha = "Mental Fatigue & Restless Sleep";
       } else if (/digestion|gas|bloating|constipation|pet|stomach|kabz|malabaddhata|agni/.test(qLower)) {
         concern = "Digestive Agni & Bowel Health (मंदाग्नि / मलबद्धता)";
-        dosha = "Samana Vata / Mandagni";
+        dosha = "Sluggish Digestion & Metabolic Waste";
       }
 
       const patientNameClean = patientName || activeUser?.name || 'Aarav Patil';
       const patientId = activeUser?.id || `PAT-${Date.now().toString().slice(-4)}`;
       const phone = activeUser?.phone || '+91 98765 43210';
       const city = activeUser?.city || 'Nagpur, Maharashtra';
-      const prakriti = activeUser?.prakriti || 'Vata-Pitta';
+      const prakriti = activeUser?.prakriti || 'Holistic Wellness Profile';
 
       const newChatRecord = {
         id: `chat-${patientId}`,
@@ -740,7 +763,7 @@ export const AyurvedicAIChatModal = ({
             target_lang: langToUse,
             patient_context: (!isGuest && activeUser && activeUser.name) ? {
               name: activeUser.name,
-              prakriti: activeUser.prakriti || 'Vata-Pitta',
+              prakriti: activeUser.prakriti || 'Holistic Wellness Profile',
               health_concerns: activeUser.health_concerns || activeUser.concerns || ''
             } : null,
             conversation_history: messages.slice(-6).map(m => ({
@@ -850,22 +873,23 @@ IMAGE IDENTIFICATION & CLINICAL GUIDELINES:
             // Text-Only Prompt
             sysPrompt = `You are Zeniva AI (झेनिव्हा AI), an expert certified Classical Senior Ayurvedic Vaidya and Clinical Physician with deep mastery over Charaka Samhita, Sushruta Samhita, and Ashtanga Hridaya.
 
-CRITICAL CLINICAL & CONVERSATIONAL RULES:
-1. ACCURATE DIRECT ANSWER: Directly, precisely, and thoroughly address the user's specific symptom, disease, or health question: "${queryToSend}". NEVER give a generic, unrelated, or mismatched template answer!
+CRITICAL MANDATORY RULES:
+1. STRICT TERMINOLOGY RULE: NEVER use or mention the words 'Vata', 'Pitta', 'Kapha', or 'Tridosha'. Describe root causes and health states using practical, consumer-friendly Ayurvedic terminology: Digestive Fire (Agni), Metabolic Heat, Physical Mobility, Immune Stability, Tissue Vitality (Ojas), and Natural Balance.
+2. ACCURATE DIRECT ANSWER: Directly, precisely, and thoroughly address the user's specific symptom, disease, or health question: "${queryToSend}". NEVER give a generic, unrelated, or mismatched template answer!
    - If user asks about headache (सर दर्द, डोकेदुखी), treat headache and migraine with Shirashoola protocols (Anu Taila Nasya, Brahmi, almond oil).
    - If user asks about pimples / acne (पिंपल, मुंहासे, मुरुम), treat acne with Yuvana Pidika protocols (Khadirarishta, Neem, Lodhra, Kaishore Guggulu).
    - If user asks about diet / nutrition (डाइट, आहार, diet plan), provide a structured wholesome daily Ayurvedic meal schedule.
    - If user asks about general health, give rich, specific clinical insights and ask what specific ailment they have.
-2. LANGUAGE MIRRORING:
+3. LANGUAGE MIRRORING:
    - If user asks in Hindi (हिन्दी) or Devanagari or Hinglish, answer in fluent, pure, natural, respectful Hindi (हिन्दी).
    - If user asks in Marathi (मराठी), answer in fluent, respectful Marathi (मराठी).
    - If user asks in English, answer in polished, empathetic English.
-3. CLINICAL STRUCTURE:
-   - 🌿 **दोष व संप्राप्ती (Dosha & Root Cause Analysis):** Explain Tridosha balance (Vata, Pitta, Kapha), Agni (digestive fire), and Ama (toxins).
+4. CLINICAL STRUCTURE:
+   - 🌿 **शारीरिक मूळ कारण (Root Cause Analysis):** Explain digestive fire (Agni), bodily heat, and metabolic waste (Ama).
    - 💊 **शास्त्रीय औषधियां व घरेलू नुस्खे (Classical Remedies & Formulations):** Mention authentic herbs and classical medicines with exact dosages and timings.
    - 🥗 **आहार पथ्य व अपथ्य (Dietary Care):** Specific foods to eat and foods to strictly avoid.
    - 🧘 **दिनचर्या व योग (Lifestyle & Routine):** Daily habits, Pranayama, and lifestyle tips.
-4. TONE: Compassionate, highly professional, encouraging, addressing the patient respectfully as "${patientName ? patientName + ' जी' : 'जी'}".`;
+5. TONE: Compassionate, highly professional, encouraging, addressing the patient respectfully as "${patientName ? patientName + ' जी' : 'जी'}".`;
 
             userContent = queryToSend;
 

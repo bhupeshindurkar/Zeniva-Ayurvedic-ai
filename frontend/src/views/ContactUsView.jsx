@@ -151,7 +151,7 @@ export const ContactUsView = ({
         doctor_name: targetDoctor,
         email: isLoggedInPatient ? (currentUser.email || '') : '',
         prakriti: prakriti,
-        dosha_imbalance: 'Vata-Pitta Balance',
+        dosha_imbalance: 'Holistic Health Balance',
         primary_concern: chiefConcern,
         recent_query: recentQuery,
         recent_reply: recentReply,

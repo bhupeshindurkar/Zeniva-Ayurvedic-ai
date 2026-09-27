@@ -427,9 +427,9 @@ export const DoctorDashboard = ({
         patient_name: 'Rohan Deshmukh',
         phone: '+91 98330 44556',
         city: 'Nagpur',
-        prakriti: 'Kapha-Vata',
+        prakriti: 'Respiratory & Immunity Profile',
         primary_concern: 'Dry Cough & Chest Congestion (कास विकार)',
-        dosha_imbalance: 'Kapha-Vata Prakopa',
+        dosha_imbalance: 'Respiratory & Mucus Sensitivity',
         last_query: 'Mujhe 4 din se sookhi khasi aur gale me kharash hai, kya lu?',
         last_reply: 'कास (Cough) उपशमनासाठी सितोपलादि चूर्ण (Sitopaladi Churna 3g) मध व आल्याच्या रसासोबत दिवसातून २-३ वेळा घ्यावे. कोमट पाणी प्यावे.',
         time: '5 mins ago',
@@ -445,9 +445,9 @@ export const DoctorDashboard = ({
         patient_name: 'Neha Kulkarni',
         phone: '+91 98220 11223',
         city: 'Pune',
-        prakriti: 'Pitta Pradhana',
+        prakriti: 'Digestion & Acidity Profile',
         primary_concern: 'Hyperacidity & Heartburn (अम्लपित्त)',
-        dosha_imbalance: 'Pitta Teekshna Agni',
+        dosha_imbalance: 'High Gastric Acid & Heat',
         last_query: 'Gale aur chhati me jalan ho rahi hai khane ke baad.',
         last_reply: 'अम्लपित्त शांत करण्यासाठी कामदुधा रस किंवा अविपत्तिकर चूर्ण (3g) जेवणापूर्वी कोमट पाण्यासोबत घ्यावे. तिखट, आंबट व तेलकट पदार्थ टाळावेत.',
         time: '18 mins ago',
@@ -463,9 +463,9 @@ export const DoctorDashboard = ({
         patient_name: 'Aarav Patil',
         phone: '+91 98765 43210',
         city: 'Nagpur',
-        prakriti: 'Vata-Kapha',
+        prakriti: 'Joint Mobility & Bone Health Profile',
         primary_concern: 'Joint Stiffness & Morning Pain (संधिशूल)',
-        dosha_imbalance: 'Vata Asthidhatu Dushti',
+        dosha_imbalance: 'Joint Stiffness & Muscle Fatigue',
         last_query: 'Subah uthne par ghutno me dard aur jakdan rehti hai.',
         last_reply: 'संधिगत वात कमी करण्यासाठी योगराज गुग्गुळू (Yogaraj Guggulu - 2 गोळ्या) सकाळी व संध्याकाळी कोमट पाण्यासोबत घ्याव्यात आणि महानारायण तेलाने शेक करावा.',
         time: 'Yesterday',
@@ -3265,7 +3265,7 @@ export const DoctorDashboard = ({
                       AI Triage History · {selectedChatForTranscript.patient_name}
                     </h3>
                     <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold">
-                      {selectedChatForTranscript.prakriti || 'Vata-Pitta'}
+                      {selectedChatForTranscript.prakriti || 'Holistic Wellness Profile'}
                     </span>
                   </div>
                   <p className="text-[11px] text-stone-300">
