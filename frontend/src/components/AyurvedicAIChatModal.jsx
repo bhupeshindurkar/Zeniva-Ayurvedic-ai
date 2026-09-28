@@ -7,6 +7,7 @@ import {
   Radio, Play, Pause, Smile, MessageCircle, Languages
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { InstagramIcon } from './ZenivaIcons';
 
 // Universal Sanitizer: Strictly ensures 'Vata', 'Pitta', 'Kapha', and 'Tridosha' are NEVER displayed
 export const sanitizeAyurvedicJargon = (str) => {
@@ -790,6 +791,7 @@ export const AyurvedicAIChatModal = ({
             if (aiReplyText && aiReplyText.trim().length > 10) {
               const isLoginRequired = Boolean(data.requires_login);
               const isTeam = Boolean(data.is_team_query);
+              const isSocial = Boolean(data.is_social_query) || /(instagram|insta|reels|@zeniva|इन्स्टाग्राम|इंस्टाग्राम)/i.test(queryToSend);
               const newMsgId = `ai-${Date.now()}`;
 
               setMessages(prev => [
@@ -798,9 +800,10 @@ export const AyurvedicAIChatModal = ({
                   id: newMsgId,
                   sender: 'ai',
                   text: aiReplyText,
-                  citations: data.citations || (isTeam ? "Zeniva Group · TGPCET Nagpur" : "Charaka Samhita · Chikitsa Sthana"),
+                  citations: data.citations || (isTeam ? "Zeniva Group · TGPCET Nagpur" : (isSocial ? "Zeniva Official Instagram (@zeniva.official)" : "Charaka Samhita · Chikitsa Sthana")),
                   requires_login: isLoginRequired,
                   is_team_query: isTeam,
+                  is_social_query: isSocial,
                   lang: langToUse
                 }
               ]);
@@ -889,7 +892,10 @@ CRITICAL MANDATORY RULES:
    - 💊 **शास्त्रीय औषधियां व घरेलू नुस्खे (Classical Remedies & Formulations):** Mention authentic herbs and classical medicines with exact dosages and timings.
    - 🥗 **आहार पथ्य व अपथ्य (Dietary Care):** Specific foods to eat and foods to strictly avoid.
    - 🧘 **दिनचर्या व योग (Lifestyle & Routine):** Daily habits, Pranayama, and lifestyle tips.
-5. TONE: Compassionate, highly professional, encouraging, addressing the patient respectfully as "${patientName ? patientName + ' जी' : 'जी'}".`;
+5. TONE: Compassionate, highly professional, encouraging, addressing the patient respectfully as "${patientName ? patientName + ' जी' : 'जी'}".
+6. OFFICIAL INSTAGRAM & SOCIAL CHANNELS (@zeniva.official):
+   - Zeniva AI's official Instagram handle is @zeniva.official (Direct link: https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0).
+   - If user asks about Instagram, social media, reels, daily tips, or following Zeniva, warmly provide handle @zeniva.official and the direct link, and invite them to follow for daily Dinacharya reels and updates!`;
 
             userContent = queryToSend;
 
@@ -942,6 +948,7 @@ CRITICAL MANDATORY RULES:
           }
 
           if (directText) {
+            const isSocialClient = /(instagram|insta|social|follow|page|handle|dm|social media|reels|इन्स्टाग्राम|इंस्टाग्राम|सोशल|फॉलो|insta id|@zeniva)/i.test(queryToSend);
             const newMsgId = `ai-${Date.now()}`;
             setMessages(prev => [
               ...prev,
@@ -951,9 +958,10 @@ CRITICAL MANDATORY RULES:
                 text: directText,
                 citations: currentImg 
                   ? "Zeniva Multimodal Vision AI · Ayurvedic Visual Intelligence"
-                  : "Charaka Samhita · Chikitsa Sthana (Neural RAG 70B)",
+                  : (isSocialClient ? "Zeniva Official Instagram (@zeniva.official)" : "Charaka Samhita · Chikitsa Sthana (Neural RAG 70B)"),
                 requires_login: false,
                 is_team_query: false,
+                is_social_query: isSocialClient,
                 lang: langToUse
               }
             ]);
@@ -970,6 +978,7 @@ CRITICAL MANDATORY RULES:
 
       // 2. COMPREHENSIVE MULTI-CONDITION LOCAL CLINICAL ENGINE (High-Precision Fallback)
       const isTeam = /(team|creator|founder|who made|who created|developer|निर्माते|टीम|किसने बनाया|भूपेश|विवेक|मोमिता)/i.test(queryToSend);
+      const isSocial = /(instagram|insta|social|follow|page|handle|dm|social media|reels|इन्स्टाग्राम|इंस्टाग्राम|सोशल|फॉलो|insta id|@zeniva)/i.test(queryToSend);
       const isPatientHistory = /(history|record|ehr|profile|report|patient|हिस्टरी|इतिहास|रेकॉर्ड|अहवाल|नोंदी|माहिती|पेशंट|रुग्ण|प्रिस्क्रिप्शन|फाइल|मरीज|रिकॉर्ड)/i.test(queryToSend);
       const isMealTiming = /(लवकर जेवण|लवकर का जेवावे|वेळेवर जेवण|जेवणाची वेळ|रात्रीचे जेवण|कधी जेवावे|early dinner|meal timing|eating early|when to eat|लवकर जेवणे)/i.test(queryToSend);
       const isAppetite = /(जेवण होत नाही|भूक लागत नाही|भूक|खात नाही|खाणे|जेवण|अन्न|अग्नी|मंदाग्नी|पचन|भूख नहीं|भूख|खाना|हजम|appetite|eating|hunger|meal|food|eat|anorexia|aruchi|agnimandya)/i.test(queryToSend);
@@ -990,8 +999,17 @@ CRITICAL MANDATORY RULES:
       let fallbackText = "";
       let isLoginRequired = isGuest;
       let isTeamInfo = false;
+      let isSocialInfo = false;
 
-      if (isGratitudeOrGreeting) {
+      if (isSocial) {
+        isSocialInfo = true;
+        isLoginRequired = false;
+        fallbackText = langToUse === 'mr'
+          ? "📸 **झेनिव्हा AI अधिकृत इन्स्टाग्राम (Official Instagram):**\n\nझेनिव्हा AI च्या अधिकृत इन्स्टाग्राम परिवारात आपले सहर्ष स्वागत आहे! 🌿✨\n\n📸 **अधिकृत हँडल:** **@zeniva.official**\n🔗 **थेट लिंक:** [https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0](https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0)\n\n**🌿 आपल्या इन्स्टाग्राम पेजवर काय पाहायला मिळेल?**\n• **दैनिक दिनचर्या व ऋतुचर्या रील्स:** ऋतूनुसार योग्य आहार, दिनचर्या व जीवनशैली मार्गदर्शन.\n• **घरगुती आयुर्वेदिक उपाय:** वात, पित्त, कफ शमनासाठी सोपे, घरगुती व अस्सल उपाय.\n• **नाडी व प्रकृती ज्ञान:** शरीराची प्रकृती समजून घेण्याच्या सोप्या पद्धती.\n• **नवीन AI फीचर्स:** झेनिव्हा AI मधील नवीन टूल्स व आरोग्य अपडेट्स.\n\n👉 **आताच फॉलो करा:** **@zeniva.official** आणि आपल्या आरोग्याची काळजी घ्या!"
+          : langToUse === 'hi'
+          ? "📸 **ज़ेनिवा AI आधिकारिक इंस्टाग्राम (Official Instagram):**\n\nज़ेनिवा AI के ऑफिशियल इंस्टाग्राम परिवार में आपका हार्दिक स्वागत है! 🌿✨\n\n📸 **आधिकारिक हैंडल:** **@zeniva.official**\n🔗 **डायरेक्ट लिंक:** [https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0](https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0)\n\n**🌿 हमारे इंस्टाग्राम पर आपको क्या मिलेगा?**\n• **दैनिक दिनचर्या और रील्स:** प्राकृतिक जीवनशैली, ऋतुचर्या और योग की जानकारी।\n• **आयुर्वेदिक घरेलू उपचार:** वात-पित्त-कफ संतुलन के आसान व असरदार नुस्खे।\n• **प्रकृती व नाड़ी परीक्षण टिप्स:** त्रिदोष को समझकर स्वस्थ रहने के राज।\n• **नए अपडेट्स व टूल्स:** ज़ेनिवा AI के नए फीचर्स की जानकारी।\n\n👉 **अभी फॉलो करें:** **@zeniva.official** और अपनी सेहत को संवारें!"
+          : "📸 **Zeniva AI Official Instagram (@zeniva.official):**\n\nWelcome to the official Zeniva AI Instagram community! 🌿✨\n\n📸 **Official Handle:** **@zeniva.official**\n🔗 **Direct Link:** [https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0](https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0)\n\n**🌿 What you will find on our Instagram:**\n• **Daily Dinacharya & Ritucharya Reels:** Seasonal routines, diet principles & wellness wisdom.\n• **Classical Ayurvedic Home Remedies:** Easy natural therapies for gut health, sleep & stress.\n• **Tridosha Balance Tips:** Understand Vata, Pitta, and Kapha constitution easily.\n• **Product Updates & AI Highlights:** First look at Zeniva AI's newest clinical features.\n\n👉 **Follow now:** **@zeniva.official** and start your personalized Ayurveda journey!";
+      } else if (isGratitudeOrGreeting) {
         fallbackText = langToUse === 'mr'
           ? `🙏 **आपले मनःपूर्वक स्वागत आहे! (Welcome & Health Wishes)**\n\nनमस्ते ${patientName ? patientName + ' जी' : ''}! झेनिव्हा AI आपल्या आरोग्य संवर्धनासाठी सदैव तत्पर आहे.\n\n🌿 **आरोग्य दिनचर्या सूत्र:**\n१. **वेळेवर सात्विक आहार:** ताजे व कोमट अन्न वेळेवर घ्या आणि रात्री हलका आहार ठेवा.\n२. **संतुलित विश्रांती:** पुरेशी झोप आणि नियमित प्राणायामाने मन व शरीर शांत ठेवा.\n३. **कोमट पाण्याचे सेवन:** दिवसभरात घोट-घोट कोमट पाणी पिऊन पचनक्रिया सुदृढ ठेवा.\n\nआपल्याला प्रकृती, नवीन लक्षणे किंवा औषधांविषयी काहीही विचारायचे असल्यास कधीही विचारा. **आपली काळजी घ्या आणि सदैव निरोगी राहा! 🌿✨**`
           : langToUse === 'hi'
@@ -1142,9 +1160,10 @@ CRITICAL MANDATORY RULES:
           id: newMsgId,
           sender: 'ai',
           text: fallbackText,
-          citations: isTeam ? "Zeniva Group · TGPCET Nagpur" : "Charaka Samhita · Chikitsa Sthana",
+          citations: isTeam ? "Zeniva Group · TGPCET Nagpur" : (isSocialInfo ? "Zeniva Official Instagram (@zeniva.official)" : "Charaka Samhita · Chikitsa Sthana"),
           requires_login: isLoginRequired,
           is_team_query: isTeamInfo,
+          is_social_query: isSocialInfo,
           lang: langToUse
         }
       ]);
@@ -1161,6 +1180,7 @@ CRITICAL MANDATORY RULES:
 
   const localizedQuickPrompts = {
     mr: [
+      { text: "📸 झेनिव्हा AI चे अधिकृत इन्स्टाग्राम (Instagram) काय आहे? फॉलो कसे करावे?", label: "Instagram @zeniva" },
       { text: isGuest ? "👨‍💻 झेनिव्हा AI कोणी बनवले? टीम व संस्थापकांची माहिती सांगा" : "👨‍💻 झेनिव्हा टीम व निर्मात्यांची माहिती सांगा", label: "Zeniva Team" },
       { text: "🧭 झेनिव्हा डॅशबोर्डवर काय काय सुविधा व फीचर्स उपलब्ध आहेत?", label: "Dashboard Guide" },
       { text: isGuest ? "🌱 पचन, गॅस व ऍसिडिटीवरील आयुर्वेदिक उपाय सांगा" : `🌱 ${patientName} यांच्यासाठी पचन व गॅसवरील उपाय`, label: "पचन (Agni)" },
@@ -1169,6 +1189,7 @@ CRITICAL MANDATORY RULES:
       { text: isGuest ? "🌿 आयुर्वेदिक आरोग्य परीक्षण कसे करावे?" : "📋 माझा आरोग्य अहवाल दाखवा", label: isGuest ? "Health Check" : "My Profile EHR" }
     ],
     hi: [
+      { text: "📸 ज़ेनिवा AI का आधिकारिक इंस्टाग्राम (Instagram) क्या है? फॉलो कैसे करें?", label: "Instagram @zeniva" },
       { text: isGuest ? "👨‍💻 ज़ेनिवा AI किसने बनाया है? टीम और फाउंडर्स की जानकारी बताएं" : "👨‍💻 ज़ेनिवा टीम और फाउंडर्स की जानकारी बताएं", label: "Zeniva Team" },
       { text: "🧭 ज़ेनिवा डैशबोर्ड पर क्या-क्या सुविधाएं और फीचर्स उपलब्ध हैं?", label: "Dashboard Guide" },
       { text: isGuest ? "🌱 पाचन और गैस के लिए घरेलू आयुर्वेदिक उपाय बताएं" : `🌱 ${patientName} जी के लिए पाचन और गैस के घरेलू उपाय`, label: "पाचन (Agni)" },
@@ -1177,6 +1198,7 @@ CRITICAL MANDATORY RULES:
       { text: isGuest ? "🌿 आयुर्वेदिक स्वास्थ्य परीक्षण कैसे करें?" : "📋 मेरी स्वास्थ्य प्रोफाइल और रिकॉर्ड दिखाएं", label: isGuest ? "Health Check" : "My Profile EHR" }
     ],
     en: [
+      { text: "📸 What is Zeniva AI's official Instagram page & how to follow?", label: "Instagram @zeniva" },
       { text: isGuest ? "👨‍💻 Who created Zeniva AI? Tell me about the founders and team" : "👨‍💻 Tell me about the Zeniva creators and team", label: "Zeniva Team" },
       { text: "🧭 What features and services are available on the Zeniva dashboard?", label: "Dashboard Guide" },
       { text: isGuest ? "🌱 Ayurvedic remedies for digestion and gut health" : `🌱 Ayurvedic digestion & gut health remedies for ${patientName}`, label: "Digestion (Agni)" },
@@ -1255,6 +1277,17 @@ CRITICAL MANDATORY RULES:
           </div>
 
           <div className="relative z-10 flex items-center gap-2 sm:gap-3">
+            <a
+              href="https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-[#833ab4]/80 via-[#fd1d1d]/80 to-[#fcb045]/80 hover:brightness-110 border border-pink-400/50 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs hover:scale-105 shrink-0"
+              title="Zeniva AI Official Instagram (@zeniva.official)"
+            >
+              <InstagramIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">@zeniva.official</span>
+            </a>
+
             <button
               type="button"
               onClick={() => {
@@ -1619,6 +1652,41 @@ CRITICAL MANDATORY RULES:
                           <span>View Team</span>
                           <ArrowRight className="w-3 h-3" />
                         </button>
+                      </div>
+                    )}
+
+                    {!isUser && (msg.is_social_query || /(instagram|insta|reels|@zeniva|इन्स्टाग्राम|इंस्टाग्राम)/i.test(msg.text)) && (
+                      <div className="pt-2.5 mt-2 border-t border-pink-200 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-amber-500/10 p-3.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 border border-pink-300 shadow-sm animate-in fade-in">
+                        <div className="flex items-center gap-2.5 text-[11px] text-pink-950 font-bold">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center text-white shadow-xs shrink-0">
+                            <InstagramIcon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="font-extrabold text-stone-900 flex items-center gap-1.5">
+                              <span>Zeniva Official Instagram</span>
+                              <span className="text-[10px] text-pink-700 bg-pink-100 px-1.5 py-0.5 rounded-full font-bold">@zeniva.official</span>
+                            </p>
+                            <p className="text-[10px] text-stone-600 font-medium">
+                              {selectedLang === 'mr'
+                                ? "दैनिक दिनचर्या, आयुर्वेदिक रील्स व घरगुती उपायांसाठी फॉलो करा"
+                                : selectedLang === 'hi'
+                                ? "दैनिक दिनचर्या, आयुर्वेदिक रील्स और घरेलू उपायों के लिए फॉलो करें"
+                                : "Daily Ayurvedic Dinacharya reels, home remedies & live updates"}
+                            </p>
+                          </div>
+                        </div>
+                        <a
+                          href="https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] hover:brightness-110 text-white text-[11px] font-bold shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                        >
+                          <InstagramIcon className="w-3.5 h-3.5" />
+                          <span>
+                            {selectedLang === 'mr' ? "फॉलो करा" : selectedLang === 'hi' ? "फॉलो करें" : "Follow @zeniva.official"}
+                          </span>
+                          <ArrowRight className="w-3 h-3 ml-0.5" />
+                        </a>
                       </div>
                     )}
 

@@ -1525,7 +1525,8 @@ def chat_with_ayurveda(req: ChatRequest):
         "has_patient": res.get("has_patient", False),
         "has_doctor": res.get("has_doctor", False),
         "requires_login": res.get("requires_login", False),
-        "is_team_query": res.get("is_team_query", False)
+        "is_team_query": res.get("is_team_query", False),
+        "is_social_query": res.get("is_social_query", False)
     }
 
 class SaveChatSessionRequest(BaseModel):

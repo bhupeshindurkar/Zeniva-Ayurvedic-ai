@@ -66,8 +66,26 @@ Zeniva AI was conceptualized, designed, and engineered by the Zeniva Group under
 - Official Support & Notification Email: contact.zeniva@gmail.com
 - Available 24/7 for patient health consultations, doctor verification support, technical glitches, bug reports, and administrative queries.
 
+### Official Zeniva Instagram & Social Community:
+- Official Instagram Handle: @zeniva.official
+- Direct Instagram URL: https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0
+- Focus: Daily authentic Ayurvedic wellness reels, home remedies, Dinacharya/Ritucharya lifestyle guidance, Prakriti balancing tips, and community support.
+- Follow Us: Follow @zeniva.official on Instagram or click the Instagram badge to join our wellness family!
+
 ### Navigation on Dashboard:
 To view the team and their detailed contributions directly on the Zeniva Dashboard, users can navigate to the 'Zeniva Creators & Team' tab in the navigation menu or open '#overview/team' directly.
+"""
+
+ZENIVA_SOCIAL_INFO = """
+### Official Zeniva AI Social Media & Instagram:
+- Official Instagram Handle: @zeniva.official
+- Direct Link: https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0
+- Official Support Email: contact.zeniva@gmail.com
+- What we share on Instagram:
+  1. Daily Ayurvedic health tips, short educational reels, and seasonal wellness routines (Ritucharya / Dinacharya).
+  2. Authentic home remedies for digestion, skin glow, stress relief, and immunity using kitchen herbs.
+  3. Direct platform announcements, live Q&A, and community interaction.
+- Direct User Instruction: When the user asks about Instagram or social media, warmly provide the handle @zeniva.official and direct link (https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0), and invite them to follow!
 """
 
 def load_rag_data():
@@ -619,6 +637,15 @@ class AyurvedicRAGEngine:
         if is_team_query:
             extra_context.append(ZENIVA_TEAM_INFO)
 
+        # 1.1 Official Instagram & Social Media Query Detection
+        social_keywords = [
+            "instagram", "insta", "social", "follow", "page", "handle", "dm", "social media", "reels",
+            "इन्स्टाग्राम", "इंस्टाग्राम", "सोशल", "फॉलो", "follow us", "insta id", "id", "@zeniva"
+        ]
+        is_social_query = any(k in prompt.lower() for k in social_keywords)
+        if is_social_query:
+            extra_context.append(ZENIVA_SOCIAL_INFO)
+
         # 2. Medical Treatment Query Detection (Full Clinical Intelligence)
         medical_keywords = [
             "bimari", "ilaj", "bimar", "pain", "fever", "cough", "cold", "headache", "cure", "medicine", "dawa", "aushadhi",
@@ -722,6 +749,10 @@ class AyurvedicRAGEngine:
                 f"{common_style_rules}\n"
                 "ZENIVA TEAM & CREATORS:\n"
                 "- If asked who made Zeniva or about the team/founders, explain clearly about Founder Bhupesh Indurkar, Vivek Rathod, Momita Lande, Dhrup Sonkar, Shreya Satpute, and Sachin Limbule from TGPCET Nagpur, and invite them to visit '#overview/team' on the dashboard!\n\n"
+                "OFFICIAL INSTAGRAM & SOCIAL MEDIA (@zeniva.official):\n"
+                "- Official Instagram Handle: @zeniva.official\n"
+                "- Direct Instagram Link: https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0\n"
+                "- If asked about Instagram, reels, daily Ayurvedic routines, or following Zeniva, provide the exact handle @zeniva.official, direct link, and invite them to follow for daily Dinacharya reels, herbal remedies, and updates!\n\n"
                 "TONE & MANNER:\n"
                 "- Warm, empathetic, professional, confident, and polite. Greet warmly (e.g. 'नमस्ते!' or 'नमस्कार!')."
             )
@@ -730,6 +761,10 @@ class AyurvedicRAGEngine:
                 f"You are ZENIVA (झेनिव्हा), the personal AI Ayurvedic Doctor and clinical companion for logged-in patient: {pat_name}.\n"
                 "You operate with the intelligence, depth, articulateness, and helpfulness of ChatGPT (GPT-4), combined with profound classical Ayurvedic wisdom (Charaka & Sushruta Samhita).\n\n"
                 f"{common_style_rules}\n"
+                "OFFICIAL INSTAGRAM & SOCIAL MEDIA (@zeniva.official):\n"
+                "- Official Instagram Handle: @zeniva.official\n"
+                "- Direct Instagram Link: https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0\n"
+                "- If asked about Instagram, social media, or daily wellness reels, share the official handle @zeniva.official and link.\n\n"
                 f"PATIENT-CENTRIC DIRECTIVE:\n"
                 f"- GREETING: Warmly address {pat_name} respectfully (e.g. 'नमस्ते {pat_name} जी' or 'नमस्कार {pat_name}जी').\n"
                 f"- PERSONAL DATA: When {pat_name} asks about their health, medical history, constitution, or treatment, immediately refer to their actual recorded health record (Constitution/Dosha, Agni, Diet) provided above and provide personalized guidance customized to them.\n"
@@ -762,7 +797,8 @@ class AyurvedicRAGEngine:
                     "model_used": "openrouter-llama-70b",
                     "citations": kb_context,
                     "requires_login": requires_login,
-                    "is_team_query": is_team_query
+                    "is_team_query": is_team_query,
+                    "is_social_query": is_social_query
                 }
 
         # Priority 2: Gemini LLM (if valid AIzaSy Google API key is configured)
@@ -790,7 +826,8 @@ class AyurvedicRAGEngine:
                             "model_used": model_cand,
                             "citations": kb_context,
                             "requires_login": requires_login,
-                            "is_team_query": is_team_query
+                            "is_team_query": is_team_query,
+                            "is_social_query": is_social_query
                         }
                 except Exception as ex:
                     print(f"[Gemini Model {model_cand} Error]:", ex)
@@ -806,7 +843,8 @@ class AyurvedicRAGEngine:
                 "model_used": "openai-gpt",
                 "citations": kb_context,
                 "requires_login": requires_login,
-                "is_team_query": is_team_query
+                "is_team_query": is_team_query,
+                "is_social_query": is_social_query
             }
 
         # Deterministic High-Precision Clinical Ayurvedic Intelligence Fallback
@@ -848,6 +886,46 @@ class AyurvedicRAGEngine:
                     "5. **Shreya Satpute** — Database Architect & Clinical Data Systems Engineer\n"
                     "6. **Sachin Limbule** — Lead Website & Web Performance Testing Engineer\n\n"
                     "✨ You can explore full profiles, deliverables, and social links in the **'Zeniva Creators & Team'** tab (#overview/team) on the dashboard!"
+                )
+        elif is_social_query:
+            if target_lang == "mr" or any(ord(c) >= 0x0900 and ord(c) <= 0x097F for c in prompt):
+                fallback_reply = (
+                    "📸 **झेनिव्हा AI अधिकृत इन्स्टाग्राम (Official Instagram):**\n\n"
+                    "झेनिव्हा AI च्या अधिकृत इन्स्टाग्राम परिवारात आपले सहर्ष स्वागत आहे! 🌿✨\n\n"
+                    "📸 **अधिकृत हँडल:** **@zeniva.official**\n"
+                    "🔗 **थेट लिंक:** [https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0](https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0)\n\n"
+                    "**🌿 आपल्या इन्स्टाग्राम पेजवर काय पाहायला मिळेल?**\n"
+                    "• **दैनिक दिनचर्या व ऋतुचर्या रिल्स:** ऋतूनुसार योग्य आहार, दिनचर्या व जीवनशैली मार्गदर्शन.\n"
+                    "• **घरगुती आयुर्वेदिक उपाय:** वात, पित्त, कफ शमनासाठी सोपे, घरगुती व अस्सल उपाय.\n"
+                    "• **नाडी व प्रकृती ज्ञान:** शरीराची प्रकृती समजून घेण्याच्या शास्त्रीय पद्धती.\n"
+                    "• **नवीन AI फीचर्स:** झेनिव्हा AI मधील नवीन टूल्स व आरोग्य अपडेट्स.\n\n"
+                    "👉 **आताच फॉलो करा:** **@zeniva.official** आणि आपल्या आरोग्याची काळजी घ्या!"
+                )
+            elif target_lang == "hi":
+                fallback_reply = (
+                    "📸 **ज़ेनिवा AI आधिकारिक इंस्टाग्राम (Official Instagram):**\n\n"
+                    "ज़ेनिवा AI के ऑफिशियल इंस्टाग्राम परिवार में आपका हार्दिक स्वागत है! 🌿✨\n\n"
+                    "📸 **आधिकारिक हैंडल:** **@zeniva.official**\n"
+                    "🔗 **डायरेक्ट लिंक:** [https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0](https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0)\n\n"
+                    "**🌿 हमारे इंस्टाग्राम पर आपको क्या मिलेगा?**\n"
+                    "• **दैनिक दिनचर्या और रील्स:** प्राकृतिक जीवनशैली, ऋतुचर्या और योग की जानकारी।\n"
+                    "• **आयुर्वेदिक घरेलू उपचार:** वात-पित्त-कफ संतुलन के आसान व असरदार नुस्खे।\n"
+                    "• **प्रकृती व नाड़ी परीक्षण टिप्स:** त्रिदोष को समझकर स्वस्थ रहने के राज।\n"
+                    "• **नए अपडेट्स व टूल्स:** ज़ेनिवा AI के नए फीचर्स की जानकारी।\n\n"
+                    "👉 **अभी फॉलो करें:** **@zeniva.official** और अपनी सेहत को संवारें!"
+                )
+            else:
+                fallback_reply = (
+                    "📸 **Zeniva AI Official Instagram (@zeniva.official):**\n\n"
+                    "Welcome to the official Zeniva AI Instagram community! 🌿✨\n\n"
+                    "📸 **Official Handle:** **@zeniva.official**\n"
+                    "🔗 **Direct Link:** [https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0](https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0)\n\n"
+                    "**🌿 What you will find on our Instagram:**\n"
+                    "• **Daily Dinacharya & Ritucharya Reels:** Seasonal routines, diet principles & wellness wisdom.\n"
+                    "• **Classical Ayurvedic Home Remedies:** Easy natural therapies for gut health, sleep & stress.\n"
+                    "• **Tridosha Balance Tips:** Understand Vata, Pitta, and Kapha constitution easily.\n"
+                    "• **Product Updates & AI Highlights:** First look at Zeniva AI's newest clinical features.\n\n"
+                    "👉 **Follow now:** **@zeniva.official** and start your personalized Ayurveda journey!"
                 )
         elif requires_login:
             if target_lang == "mr" or any(ord(c) >= 0x0900 and ord(c) <= 0x097F for c in prompt):
@@ -1123,7 +1201,8 @@ class AyurvedicRAGEngine:
             "model_used": "classical-corpus-fallback",
             "citations": kb_context,
             "requires_login": requires_login,
-            "is_team_query": is_team_query
+            "is_team_query": is_team_query,
+            "is_social_query": is_social_query
         }
 
     def query(self, query: str, dosha: Optional[str] = None, language: str = "en", patient_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
