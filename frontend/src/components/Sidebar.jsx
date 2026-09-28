@@ -7,7 +7,7 @@ import {
   FileBarChart, ShieldAlert, Award, Trophy, MapPin, ClipboardList,
   Mail, HelpCircle, Headphones, Briefcase, Phone, X
 } from 'lucide-react';
-import { ZenivaLogo, MeditatingYogi } from './ZenivaIcons';
+import { ZenivaLogo, MeditatingYogi, InstagramIcon } from './ZenivaIcons';
 
 export const Sidebar = ({ 
   currentRole = 'patient', // 'patient' | 'doctor' | 'admin' | 'public'
@@ -512,6 +512,20 @@ export const Sidebar = ({
             </div>
           </div>
         )}
+
+        {/* Official Instagram Follow Strip */}
+        <div className="px-3 py-1.5 border-t border-[#311E54] bg-[#160B2C]/70 flex items-center justify-between">
+          <a
+            href="https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[10px] text-pink-300 hover:text-pink-100 transition-colors group"
+          >
+            <InstagramIcon className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+            <span className="font-semibold tracking-wide">@zeniva.official</span>
+          </a>
+          <span className="text-[9px] text-[#A697C3] uppercase tracking-wider font-semibold">Instagram</span>
+        </div>
 
         {/* Bottom Footer Attribution: Subtle Developed by Zeniva Group */}
         <div className="px-3 py-2 border-t border-[#311E54] text-[9px] text-[#8E82A8] flex items-center justify-between">

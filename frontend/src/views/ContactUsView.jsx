@@ -5,6 +5,7 @@ import {
   HelpCircle, ChevronDown, ChevronUp, AlertCircle, Building, ExternalLink,
   Users, X, MessageCircle
 } from 'lucide-react';
+import { InstagramIcon } from '../components/ZenivaIcons';
 
 export const ContactUsView = ({ 
   currentUser = {}, 
@@ -493,6 +494,15 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
               <Users className="w-3.5 h-3.5 text-emerald-300" />
               <span>Join WhatsApp Group</span>
             </button>
+            <a
+              href="https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#833ab4]/40 via-[#fd1d1d]/40 to-[#fcb045]/40 hover:from-[#833ab4]/60 hover:to-[#fcb045]/60 text-white text-xs sm:text-sm font-bold border border-pink-400/40 transition-transform hover:scale-105 cursor-pointer shadow-md"
+            >
+              <InstagramIcon className="w-4 h-4" />
+              <span>Follow @zeniva.official</span>
+            </a>
             <button
               onClick={() => onOpenAIChat('मला झेनिव्हा सहाय्यता व डॉक्टरांशी संपर्क साधायचा आहे.')}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium border border-white/15 transition-transform hover:scale-105 cursor-pointer"
@@ -505,7 +515,7 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
       </div>
 
       {/* 2. Direct Contact Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         
         {/* Card 1: Chat with Zeniva Doctor on WhatsApp */}
         <div className="bg-white p-5 rounded-2xl border border-emerald-200/80 shadow-xs hover:shadow-md transition-all space-y-2 relative overflow-hidden group">
@@ -573,6 +583,42 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
             </button>
             <p className="text-[10px] text-stone-500 text-center mt-1.5 font-mono">
               1,200+ Active Members
+            </p>
+          </div>
+        </div>
+
+        {/* Card 3: Official Instagram Profile */}
+        <div className="bg-white p-5 rounded-2xl border border-pink-200/80 shadow-xs hover:shadow-md transition-all space-y-2 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-full blur-xl pointer-events-none group-hover:bg-pink-100 transition-colors"></div>
+          
+          <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#f09433]/20 via-[#dc2743]/20 to-[#bc1888]/20 flex items-center justify-center font-bold">
+              <InstagramIcon className="w-5 h-5" />
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-200 text-[10px] font-bold">
+              📸 Official Page
+            </span>
+          </div>
+
+          <h3 className="text-sm font-bold text-[#1C1917] pt-1">
+            Instagram @zeniva.official
+          </h3>
+          <p className="text-xs text-[#78716C] leading-snug">
+            Daily Ayurvedic reels, health hacks & clinical AI updates.
+          </p>
+
+          <div className="pt-2">
+            <a
+              href="https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white text-xs font-bold flex items-center justify-center gap-2 hover:opacity-95 transition-all cursor-pointer shadow-xs hover:scale-[1.02]"
+            >
+              <span>Follow on Instagram</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+            <p className="text-[10px] text-pink-700 font-semibold text-center mt-1.5 font-mono">
+              @zeniva.official
             </p>
           </div>
         </div>
