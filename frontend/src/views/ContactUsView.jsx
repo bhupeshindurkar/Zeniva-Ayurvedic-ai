@@ -359,32 +359,6 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
               </button>
             </div>
 
-            {/* Option 1: Zeniva AI WhatsApp Group */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-emerald-700" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">
-                    Zeniva AI WhatsApp Community Group
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 rounded-full bg-[#25D366] text-white text-[10px] font-bold">
-                  1,200+ Members
-                </span>
-              </div>
-              <p className="text-xs text-stone-600 leading-relaxed">
-                आमच्या अधिकृत व्हॉट्सअ‍ॅप ग्रुपमध्ये सामील व्हा! येथे आयुर्वेदिक डॉक्टर, AI असिस्टंट व सदस्य दररोज मोफत आरोग्य सल्ला, दिनचर्या मार्गदर्शक आणि नवीन अपडेट्स शेअर करतात.
-              </p>
-              <button
-                onClick={() => handleStartWhatsAppChat('group')}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all hover:scale-[1.02] cursor-pointer"
-              >
-                <Users className="w-4 h-4" />
-                <span>Join Zeniva AI WhatsApp Group (ग्रुप जॉईन करा)</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
             {/* Option 2: 1-on-1 Direct Doctor Consultation */}
             <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
               <div className="flex items-center justify-between">
@@ -487,13 +461,6 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
               <span>{isConnectingWhatsApp ? 'Opening Official WhatsApp...' : 'Chat with Zeniva AI on WhatsApp'}</span>
               <span className="w-2 h-2 rounded-full bg-emerald-100 animate-pulse"></span>
             </button>
-            <button
-              onClick={() => handleStartWhatsAppChat('group')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs sm:text-sm font-bold border border-white/20 transition-transform hover:scale-105 cursor-pointer"
-            >
-              <Users className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Join WhatsApp Group</span>
-            </button>
             <a
               href="https://www.instagram.com/zeniva.official?stkn=YjduaTQ1OTJuamQ0"
               target="_blank"
@@ -515,8 +482,8 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
       </div>
 
       {/* 2. Direct Contact Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
         {/* Card 1: Chat with Zeniva Doctor on WhatsApp */}
         <div className="bg-white p-5 rounded-2xl border border-emerald-200/80 shadow-xs hover:shadow-md transition-all space-y-2 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-xl pointer-events-none group-hover:bg-emerald-100 transition-colors"></div>
@@ -553,41 +520,7 @@ Namaste ${targetDoctor} & Zeniva Clinical Care Team, I would like to consult wit
           </div>
         </div>
 
-        {/* Card 2: Zeniva AI WhatsApp Community Group */}
-        <div className="bg-white p-5 rounded-2xl border border-teal-200/80 shadow-xs hover:shadow-md transition-all space-y-2 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50 rounded-full blur-xl pointer-events-none group-hover:bg-teal-100 transition-colors"></div>
-          
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center font-bold">
-              <Users className="w-5 h-5 text-teal-700" />
-            </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-[10px] font-bold">
-              🌿 Group Care
-            </span>
-          </div>
-
-          <h3 className="text-sm font-bold text-[#1C1917] pt-1">
-            Zeniva AI WhatsApp Group
-          </h3>
-          <p className="text-xs text-[#78716C] leading-snug">
-            Join official group for community updates, daily tips & doctor care.
-          </p>
-
-          <div className="pt-2">
-            <button
-              onClick={() => handleStartWhatsAppChat('group')}
-              className="w-full py-2 px-3 rounded-xl bg-teal-50 hover:bg-teal-700 text-teal-800 hover:text-white text-xs font-bold border border-teal-200 hover:border-teal-700 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
-            >
-              <span>Join WhatsApp Group</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <p className="text-[10px] text-stone-500 text-center mt-1.5 font-mono">
-              1,200+ Active Members
-            </p>
-          </div>
-        </div>
-
-        {/* Card 3: Official Instagram Profile */}
+        {/* Card 2: Official Instagram Profile */}
         <div className="bg-white p-5 rounded-2xl border border-pink-200/80 shadow-xs hover:shadow-md transition-all space-y-2 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-full blur-xl pointer-events-none group-hover:bg-pink-100 transition-colors"></div>
           
