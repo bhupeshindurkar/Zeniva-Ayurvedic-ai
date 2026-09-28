@@ -277,14 +277,28 @@ export default function App() {
         if (savedDoc) {
           const parsed = JSON.parse(savedDoc);
           const isPatient = parsed?.role === 'patient' || parsed?.phone?.includes('9011942126') || (parsed?.name && parsed.name.toLowerCase().includes('kamlesh') && !parsed.password);
-          if (!isPatient && parsed && (parsed.role === 'doctor' || parsed.qualification)) return parsed;
+          if (!isPatient && parsed && (parsed.role === 'doctor' || parsed.qualification)) {
+            const cleanDocP = (parsed.phone || '').replace(/\D/g, '').slice(-10);
+            const cachedDocAvatar = cleanDocP ? localStorage.getItem(`zeniva_doctor_avatar_${cleanDocP}`) : null;
+            return {
+              ...parsed,
+              avatar: cachedDocAvatar || parsed.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400'
+            };
+          }
         }
         // Fallback to verified doctor from list (e.g. Dr. Sohil Indurkar)
         const listStr = localStorage.getItem('zeniva_registered_doctors_list');
         if (listStr) {
           const dList = JSON.parse(listStr);
           const legitDoctor = dList.find(d => d.role === 'doctor' && !d.phone?.includes('9011942126') && !d.name?.toLowerCase().includes('kamlesh'));
-          if (legitDoctor) return legitDoctor;
+          if (legitDoctor) {
+            const cleanDocP = (legitDoctor.phone || '').replace(/\D/g, '').slice(-10);
+            const cachedDocAvatar = cleanDocP ? localStorage.getItem(`zeniva_doctor_avatar_${cleanDocP}`) : null;
+            return {
+              ...legitDoctor,
+              avatar: cachedDocAvatar || legitDoctor.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400'
+            };
+          }
         }
       } else if (initialState.role === 'patient') {
         const savedPat = localStorage.getItem('zeniva_patient_user');
@@ -298,7 +312,10 @@ export default function App() {
               localStorage.removeItem('zeniva_current_user');
               localStorage.removeItem('zeniva_session_expiry');
             } else {
-              const cachedAvatar = typeof localStorage !== 'undefined' ? localStorage.getItem('zeniva_patient_avatar') : null;
+              const cleanPatP = (parsed.phone || '').replace(/\D/g, '').slice(-10);
+              const cachedAvatar = typeof localStorage !== 'undefined' 
+                ? (localStorage.getItem('zeniva_patient_avatar') || (cleanPatP ? localStorage.getItem(`zeniva_patient_avatar_${cleanPatP}`) : null))
+                : null;
               return {
                 ...parsed,
                 avatar: cachedAvatar || parsed.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
@@ -318,6 +335,8 @@ export default function App() {
         };
       }
     } catch (e) {}
+
+    const cachedSohilAvatar = typeof localStorage !== 'undefined' ? (localStorage.getItem('zeniva_doctor_avatar_8766903403') || null) : null;
     return initialState.role === 'doctor' ? {
       id: 'ZEN-DOC-876690',
       doctor_id: 'ZEN-DOC-876690',
@@ -326,7 +345,7 @@ export default function App() {
       role: 'doctor',
       qualification: 'BAMS, MD (Ayurveda)',
       specialization: 'Kayachikitsa & Panchakarma',
-      avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400',
+      avatar: cachedSohilAvatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400',
       status: 'verified',
       isLoggedIn: true
     } : initialState.role === 'admin' ? {
@@ -514,7 +533,9 @@ export default function App() {
               diet: profile?.diet || localPat.diet || 'Vegan Whole Plant Foods',
               agribalam: profile?.agribalam || localPat.agribalam || 'Madhyama Agni (Moderate Digestion)',
               vikriti: profile?.vikriti || localPat.vikriti || '',
-              avatar: (typeof localStorage !== 'undefined' && localStorage.getItem('zeniva_patient_avatar')) || localPat.avatar || profile?.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+              avatar: (profile?.avatar_url && profile.avatar_url.length > 20) 
+                ? profile.avatar_url 
+                : (session.user.user_metadata?.avatar_url || (typeof localStorage !== 'undefined' && localStorage.getItem('zeniva_patient_avatar')) || localPat.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'),
               status: profile?.status || localPat.status || 'active',
               isLoggedIn: true,
               isRegistered: true,
@@ -523,6 +544,13 @@ export default function App() {
 
             // Purely store in patient storage
             localStorage.setItem('zeniva_patient_user', JSON.stringify(updatedPatient));
+            if (updatedPatient.avatar && !updatedPatient.avatar.includes('unsplash.com')) {
+              localStorage.setItem('zeniva_patient_avatar', updatedPatient.avatar);
+              const patCleanP = (updatedPatient.phone || '').replace(/\D/g, '').slice(-10);
+              if (patCleanP) {
+                localStorage.setItem(`zeniva_patient_avatar_${patCleanP}`, updatedPatient.avatar);
+              }
+            }
 
             // CRITICAL: Clean any contaminated doctor storage
             localStorage.removeItem('zeniva_doctor_user');
@@ -540,6 +568,10 @@ export default function App() {
           if (isDoctorInDb || isDoctorInMeta) {
             const rawDocName = profile?.full_name || session.user.user_metadata?.full_name || 'Dr. Ayurvedic Vaidya';
             const formattedDocName = rawDocName.startsWith('Dr.') ? rawDocName : `Dr. ${rawDocName}`;
+            const docCleanP = (profile?.phone || session.user.user_metadata?.phone || '').replace(/\D/g, '').slice(-10);
+            const docCachedAv = docCleanP ? localStorage.getItem(`zeniva_doctor_avatar_${docCleanP}`) : null;
+            const docCloudAv = (profile?.avatar_url && profile.avatar_url.length > 20) ? profile.avatar_url : (session.user.user_metadata?.avatar_url || null);
+            const resolvedDocAvatar = docCloudAv || docCachedAv || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400';
 
             const updatedDoctor = {
               id: session.user.id,
@@ -552,7 +584,7 @@ export default function App() {
               specialization: profile?.specialization || session.user.user_metadata?.specialization || 'Kayachikitsa & Panchakarma',
               organization: profile?.organization || 'Zeniva Ayurvedic Clinical Center',
               city: profile?.city || 'Nagpur, Maharashtra',
-              avatar: profile?.avatar_url || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400',
+              avatar: resolvedDocAvatar,
               status: profile?.status || 'pending_verification',
               isLoggedIn: true,
               isRegistered: true,
@@ -561,6 +593,9 @@ export default function App() {
 
             localStorage.setItem('zeniva_doctor_user', JSON.stringify(updatedDoctor));
             localStorage.setItem('zeniva_registered_doctor', JSON.stringify(updatedDoctor));
+            if (docCleanP && resolvedDocAvatar && !resolvedDocAvatar.includes('unsplash.com')) {
+              localStorage.setItem(`zeniva_doctor_avatar_${docCleanP}`, resolvedDocAvatar);
+            }
             if (isDoctorRoute && updatedDoctor.status === 'verified') {
               setCurrentUser(updatedDoctor);
               localStorage.setItem('zeniva_current_user', JSON.stringify(updatedDoctor));

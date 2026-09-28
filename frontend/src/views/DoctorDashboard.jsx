@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { MortarPestleGraphic, ZenivaLogo } from '../components/ZenivaIcons';
 import { supabase } from '../lib/supabase';
+import { getApiUrl } from '../lib/api';
 
 export const DoctorDashboard = ({
   activeTab = 'home',
@@ -82,6 +83,77 @@ export const DoctorDashboard = ({
     }
   }, [isRejected, currentUser.rejection_reason]);
 
+  // Ensure custom uploaded doctor avatar is fetched and restored from cloud / local storage across re-logins
+  useEffect(() => {
+    const cleanPhone = (currentUser.phone || effectiveDoctor.phone || '8766903403').replace(/\D/g, '').slice(-10);
+    const cleanEmail = (currentUser.email || effectiveDoctor.email || '').trim().toLowerCase();
+
+    // 1. Check local key
+    const localSavedAvatar = cleanPhone ? localStorage.getItem(`zeniva_doctor_avatar_${cleanPhone}`) : null;
+    if (localSavedAvatar && localSavedAvatar.length > 20 && (!effectiveDoctor.avatar || effectiveDoctor.avatar.includes('unsplash.com'))) {
+      if (onUpdateUser) onUpdateUser({ ...currentUser, ...effectiveDoctor, avatar: localSavedAvatar });
+    }
+
+    // 2. Check Supabase profiles, auth metadata, and doctor_reviews mirror
+    if (supabase) {
+      supabase.auth.getUser().then(({ data }) => {
+        const authAvatar = data?.user?.user_metadata?.avatar_url;
+        if (authAvatar && authAvatar.length > 20 && authAvatar !== effectiveDoctor.avatar) {
+          if (onUpdateUser) onUpdateUser({ ...currentUser, ...effectiveDoctor, avatar: authAvatar });
+          if (cleanPhone) localStorage.setItem(`zeniva_doctor_avatar_${cleanPhone}`, authAvatar);
+        }
+      }).catch(() => {});
+
+      let q = supabase.from('profiles').select('avatar_url, full_name, qualification, specialization').eq('role', 'doctor');
+      if (cleanPhone) {
+        q = q.or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
+      } else if (cleanEmail) {
+        q = q.eq('email', cleanEmail);
+      }
+      q.limit(1).then(({ data }) => {
+        if (data && data[0]?.avatar_url && data[0].avatar_url.length > 20) {
+          const cloudAvatar = data[0].avatar_url;
+          if (cloudAvatar !== effectiveDoctor.avatar) {
+            if (onUpdateUser) onUpdateUser({ ...currentUser, ...effectiveDoctor, avatar: cloudAvatar });
+            if (cleanPhone) localStorage.setItem(`zeniva_doctor_avatar_${cleanPhone}`, cloudAvatar);
+          }
+        }
+      }).catch(() => {});
+
+      const mirrorKey = `ZENIVA_DOCTOR_PROFILE_${cleanPhone}`;
+      supabase.from('doctor_reviews')
+        .select('review_notes')
+        .eq('patient_name', mirrorKey)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .then(({ data }) => {
+          if (data && data.length > 0 && data[0].review_notes) {
+            try {
+              const notes = JSON.parse(data[0].review_notes);
+              if (notes?.avatar && notes.avatar.length > 20 && notes.avatar !== effectiveDoctor.avatar) {
+                if (onUpdateUser) onUpdateUser({ ...currentUser, ...effectiveDoctor, avatar: notes.avatar });
+                if (cleanPhone) localStorage.setItem(`zeniva_doctor_avatar_${cleanPhone}`, notes.avatar);
+              }
+            } catch (e) {}
+          }
+        }).catch(() => {});
+    }
+
+    // 3. Check Backend SQLite
+    if (cleanPhone) {
+      fetch(getApiUrl(`/api/doctor/profile/${cleanPhone}`))
+        .then(res => res.json())
+        .then(data => {
+          const docObj = data?.doctor;
+          if (docObj?.avatar && docObj.avatar.length > 20 && !docObj.avatar.includes('unsplash.com')) {
+            if (onUpdateUser) onUpdateUser({ ...currentUser, ...effectiveDoctor, avatar: docObj.avatar });
+            localStorage.setItem(`zeniva_doctor_avatar_${cleanPhone}`, docObj.avatar);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [currentUser.phone, currentUser.email, effectiveDoctor.phone]);
+
   // Handle live doctor avatar change and persist permanently to Supabase, SQLite, and localStorage
   const handleDoctorAvatarUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -90,6 +162,7 @@ export const DoctorDashboard = ({
     reader.onload = async () => {
       const base64Url = reader.result;
       const cleanPhone = (currentUser.phone || effectiveDoctor.phone || '8766903403').replace(/\D/g, '').slice(-10);
+      const cleanEmail = (currentUser.email || effectiveDoctor.email || '').trim().toLowerCase();
       const updatedUser = {
         ...currentUser,
         ...effectiveDoctor,
@@ -128,13 +201,42 @@ export const DoctorDashboard = ({
 
         // 2. Persist to Supabase Cloud so re-login on ANY device retains photo permanently
         if (supabase) {
+          // Sync directly into auth user_metadata
+          try {
+            await supabase.auth.updateUser({
+              data: {
+                avatar_url: base64Url,
+                full_name: doctorName
+              }
+            });
+          } catch (authErr) {}
+
           // Update profiles table
           try {
             await supabase
               .from('profiles')
-              .update({ avatar_url: base64Url })
-              .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone},id.eq.${currentUser.id || ''}`);
+              .update({ 
+                avatar_url: base64Url,
+                full_name: doctorName,
+                qualification: qualification,
+                specialization: specialization
+              })
+              .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone},email.eq.${cleanEmail},id.eq.${currentUser.id || ''}`);
           } catch (spErr) {}
+
+          // Upsert into profiles if ID is present
+          if (currentUser.id && !currentUser.id.startsWith('ZEN-DOC-')) {
+            try {
+              await supabase.from('profiles').upsert({
+                id: currentUser.id,
+                avatar_url: base64Url,
+                full_name: doctorName,
+                phone: cleanPhone,
+                email: cleanEmail,
+                role: 'doctor'
+              });
+            } catch (upErr) {}
+          }
 
           // Also write to cloud profile mirror
           try {
@@ -151,9 +253,7 @@ export const DoctorDashboard = ({
         }
 
         // 3. Sync to backend SQLite
-        const profileUrl = (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
-          ? '/api/doctor/profile/update'
-          : 'http://127.0.0.1:8000/api/doctor/profile/update';
+        const profileUrl = getApiUrl('/api/doctor/profile/update');
         await fetch(profileUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -233,6 +333,7 @@ export const DoctorDashboard = ({
       fee: profileForm.consultationFee.trim(),
       timings: profileForm.timings.trim(),
       bio: profileForm.bio.trim(),
+      avatar: effectiveDoctor.avatar || doctorAvatar,
       role: 'doctor',
       status: 'verified',
       isLoggedIn: true
@@ -245,6 +346,9 @@ export const DoctorDashboard = ({
       localStorage.setItem('zeniva_current_user', JSON.stringify(updatedDoctor));
       localStorage.setItem('zeniva_doctor_user', JSON.stringify(updatedDoctor));
       localStorage.setItem('zeniva_registered_doctor', JSON.stringify(updatedDoctor));
+      if (cleanPhone && updatedDoctor.avatar) {
+        localStorage.setItem(`zeniva_doctor_avatar_${cleanPhone}`, updatedDoctor.avatar);
+      }
 
       const listStr = localStorage.getItem('zeniva_registered_doctors_list');
       let dList = listStr ? JSON.parse(listStr) : [];
@@ -255,6 +359,15 @@ export const DoctorDashboard = ({
       // 2. Persist to Supabase Cloud
       if (supabase) {
         try {
+          await supabase.auth.updateUser({
+            data: {
+              avatar_url: updatedDoctor.avatar,
+              full_name: formattedName
+            }
+          });
+        } catch (spAuthErr) {}
+
+        try {
           await supabase
             .from('profiles')
             .update({
@@ -263,7 +376,8 @@ export const DoctorDashboard = ({
               specialization: updatedDoctor.specialization,
               organization: updatedDoctor.organization,
               city: updatedDoctor.city,
-              phone: cleanPhone
+              phone: cleanPhone,
+              avatar_url: updatedDoctor.avatar
             })
             .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone},id.eq.${currentUser.id || ''}`);
         } catch (spErr) {}
@@ -283,9 +397,7 @@ export const DoctorDashboard = ({
 
       // 3. Persist to Backend SQLite
       try {
-        const profileUrl = (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
-          ? '/api/doctor/profile/update'
-          : 'http://127.0.0.1:8000/api/doctor/profile/update';
+        const profileUrl = getApiUrl('/api/doctor/profile/update');
         await fetch(profileUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

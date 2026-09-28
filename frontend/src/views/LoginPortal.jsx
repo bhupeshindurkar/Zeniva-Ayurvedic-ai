@@ -561,6 +561,44 @@ export const LoginPortal = ({
         throw new Error('No registered doctor account found with this mobile number or email. Please check your credentials or create an account.');
       }
 
+      const docPhone = cleanPhone || (foundDoc.phone ? String(foundDoc.phone).replace(/\D/g, '').slice(-10) : '');
+
+      // Recover custom uploaded doctor avatar across cloud & storage if missing or placeholder
+      try {
+        const cachedDocAvatar = docPhone ? localStorage.getItem(`zeniva_doctor_avatar_${docPhone}`) : null;
+        if (cachedDocAvatar && cachedDocAvatar.length > 20) {
+          foundDoc.avatar = cachedDocAvatar;
+        }
+
+        if ((!foundDoc.avatar || foundDoc.avatar.includes('unsplash.com')) && supabase && docPhone) {
+          // Check profiles
+          const { data: sDoc } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .or(`phone.eq.${docPhone},phone.eq.+91${docPhone}`)
+            .limit(1);
+          if (sDoc && sDoc[0]?.avatar_url && sDoc[0].avatar_url.length > 20) {
+            foundDoc.avatar = sDoc[0].avatar_url;
+          }
+
+          // Check reviews mirror
+          if (!foundDoc.avatar || foundDoc.avatar.includes('unsplash.com')) {
+            const { data: revData } = await supabase
+              .from('doctor_reviews')
+              .select('review_notes')
+              .eq('patient_name', `ZENIVA_DOCTOR_PROFILE_${docPhone}`)
+              .order('created_at', { ascending: false })
+              .limit(1);
+            if (revData && revData.length > 0 && revData[0].review_notes) {
+              const notes = JSON.parse(revData[0].review_notes);
+              if (notes?.avatar && notes.avatar.length > 20) {
+                foundDoc.avatar = notes.avatar;
+              }
+            }
+          }
+        }
+      } catch (avErr) {}
+
       // Ensure proper doctor structure
       foundDoc.role = 'doctor';
       foundDoc.isLoggedIn = true;
@@ -571,6 +609,9 @@ export const LoginPortal = ({
         localStorage.setItem('zeniva_doctor_user', JSON.stringify(foundDoc));
         localStorage.setItem('zeniva_registered_doctor', JSON.stringify(foundDoc));
         localStorage.setItem('zeniva_current_user', JSON.stringify(foundDoc));
+        if (docPhone && foundDoc.avatar && !foundDoc.avatar.includes('unsplash.com')) {
+          localStorage.setItem(`zeniva_doctor_avatar_${docPhone}`, foundDoc.avatar);
+        }
 
         const listStr = localStorage.getItem('zeniva_registered_doctors_list');
         if (listStr) {

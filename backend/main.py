@@ -791,12 +791,12 @@ def update_user_profile(req: UpdateProfileRequest):
                 blood_group = COALESCE(?, blood_group),
                 diet = COALESCE(?, diet),
                 agribalam = COALESCE(?, agribalam),
-                avatar = COALESCE(?, avatar)
+                avatar = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE avatar END
             WHERE id = ?
         """, (
             req.name, req.email, phone if phone else None, str(req.age) if req.age else None, req.gender,
             req.location, req.city, req.prakriti, req.vikriti,
-            blood, req.diet, req.agribalam, req.avatar, existing_user["id"]
+            blood, req.diet, req.agribalam, req.avatar, req.avatar, req.avatar, existing_user["id"]
         ))
         target_id = existing_user["id"]
     else:
@@ -956,12 +956,27 @@ async def upload_doctor_document(
 @app.get("/api/doctor/profile")
 def get_doctor_profile(phone: Optional[str] = None):
     if not phone:
-        raise HTTPException(status_code=400, detail="Phone number is required")
-    clean_phone = phone.replace("+91", "").replace(" ", "").replace("-", "")
+        raise HTTPException(status_code=400, detail="Phone or Doctor ID is required")
+    clean_target = phone.replace("+91", "").replace(" ", "").replace("-", "").strip()
+    clean_lower = phone.strip().lower()
+    
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM doctors WHERE phone = ?", (clean_phone,))
+    cursor.execute("""
+        SELECT * FROM doctors 
+        WHERE phone = ? OR phone = ? OR LOWER(email) = ? OR id = ? OR doctor_id = ?
+        LIMIT 1
+    """, (clean_target, f"+91{clean_target}", clean_lower, clean_target, clean_target))
     doc_row = cursor.fetchone()
+
+    if not doc_row:
+        cursor.execute("""
+            SELECT * FROM users 
+            WHERE (phone = ? OR phone = ? OR LOWER(email) = ? OR id = ?) AND role = 'doctor'
+            LIMIT 1
+        """, (clean_target, f"+91{clean_target}", clean_lower, clean_target))
+        doc_row = cursor.fetchone()
+
     conn.close()
 
     if not doc_row:
@@ -969,10 +984,13 @@ def get_doctor_profile(phone: Optional[str] = None):
     
     doc = dict(doc_row)
     doc["documents"] = json.loads(doc.get("documents_json") or "{}")
+    if not doc.get("avatar"):
+        doc["avatar"] = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400"
+
     return {
         "success": True,
         "doctor": doc,
-        "status": doc.get("status", "pending_verification"),
+        "status": doc.get("status", "verified"),
         **doc
     }
 
@@ -1678,67 +1696,130 @@ class DoctorProfileUpdateRequest(BaseModel):
     status: Optional[str] = "verified"
 
 @app.post("/api/doctor/profile/update")
-@app.put("/api/user/profile")
+@app.put("/api/doctor/profile/update")
+@app.post("/api/doctor/profile")
+@app.put("/api/doctor/profile")
 def update_doctor_profile_endpoint(req: DoctorProfileUpdateRequest):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        clean_phone = (req.phone or "").strip()
+        clean_phone = (req.phone or "").replace("+91", "").replace(" ", "").replace("-", "").strip()
         clean_name = (req.name or "Dr. Sohil Indurkar").strip()
         if not clean_name.startswith("Dr."):
             clean_name = f"Dr. {clean_name}"
             
+        clean_email = (req.email or "").strip().lower()
         doc_id = req.doctor_id or req.id or f"ZEN-DOC-{(clean_phone[-6:] if len(clean_phone) >= 6 else '876690')}"
         
-        # Upsert into doctors table
+        # 1. Check if doctor already exists
         cursor.execute("""
-        INSERT OR REPLACE INTO doctors (
-            id, phone, name, email, qualification, specialization,
-            experience_years, organization, city, council_name,
-            council_reg_number, avatar, status
-        ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
-        """, (
-            doc_id,
-            clean_phone,
-            clean_name,
-            req.email or "",
-            req.qualification or "BAMS, MD (Ayurveda)",
-            req.specialization or "Kayachikitsa & Panchakarma",
-            req.experience_years or 0,
-            req.organization or "Zeniva Ayurvedic Clinical Center",
-            req.city or "Nagpur, Maharashtra",
-            req.council_name or "Maharashtra Council of Indian Medicine (MCIM)",
-            req.council_reg_number or "AYU-MAH-8921",
-            req.avatar or "",
-            req.status or "verified"
-        ))
+            SELECT * FROM doctors 
+            WHERE (phone != '' AND phone = ?) OR (email != '' AND LOWER(email) = ?) OR id = ?
+            LIMIT 1
+        """, (clean_phone, clean_email, doc_id))
+        existing_doc = cursor.fetchone()
         
-        # Also sync to users table
+        if existing_doc:
+            target_doc_id = existing_doc["id"]
+            cursor.execute("""
+            UPDATE doctors SET
+                name = COALESCE(?, name),
+                email = COALESCE(?, email),
+                phone = COALESCE(?, phone),
+                qualification = COALESCE(?, qualification),
+                specialization = COALESCE(?, specialization),
+                experience_years = COALESCE(?, experience_years),
+                organization = COALESCE(?, organization),
+                city = COALESCE(?, city),
+                council_name = COALESCE(?, council_name),
+                council_reg_number = COALESCE(?, council_reg_number),
+                avatar = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE avatar END,
+                status = COALESCE(?, status)
+            WHERE id = ?
+            """, (
+                clean_name, req.email or None, clean_phone if clean_phone else None,
+                req.qualification, req.specialization,
+                req.experience_years, req.organization, req.city,
+                req.council_name, req.council_reg_number,
+                req.avatar, req.avatar, req.avatar,
+                req.status, target_doc_id
+            ))
+            doc_id = target_doc_id
+        else:
+            cursor.execute("""
+            INSERT INTO doctors (
+                id, phone, name, email, qualification, specialization,
+                experience_years, organization, city, council_name,
+                council_reg_number, avatar, status
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+            """, (
+                doc_id, clean_phone, clean_name, req.email or "",
+                req.qualification or "BAMS, MD (Ayurveda)",
+                req.specialization or "Kayachikitsa & Panchakarma",
+                req.experience_years or 0,
+                req.organization or "Zeniva Ayurvedic Clinical Center",
+                req.city or "Nagpur, Maharashtra",
+                req.council_name or "Maharashtra Council of Indian Medicine (MCIM)",
+                req.council_reg_number or "AYU-MAH-8921",
+                req.avatar or "",
+                req.status or "verified"
+            ))
+        
+        # 2. Also sync to users table
         cursor.execute("""
-        INSERT OR REPLACE INTO users (
-            id, phone, name, email, role, qualification, specialization,
-            location, city, avatar, status
-        ) VALUES (
-            ?, ?, ?, ?, 'doctor', ?, ?, ?, ?, ?, 'active'
-        )
-        """, (
-            doc_id,
-            clean_phone,
-            clean_name,
-            req.email or "",
-            req.qualification or "BAMS, MD (Ayurveda)",
-            req.specialization or "Kayachikitsa & Panchakarma",
-            req.city or "Nagpur, Maharashtra",
-            req.city or "Nagpur, Maharashtra",
-            req.avatar or "",
-        ))
+            SELECT * FROM users 
+            WHERE (phone != '' AND phone = ?) OR (email != '' AND LOWER(email) = ?) OR id = ?
+            LIMIT 1
+        """, (clean_phone, clean_email, doc_id))
+        existing_user = cursor.fetchone()
+        
+        if existing_user:
+            cursor.execute("""
+            UPDATE users SET
+                name = COALESCE(?, name),
+                email = COALESCE(?, email),
+                phone = COALESCE(?, phone),
+                qualification = COALESCE(?, qualification),
+                specialization = COALESCE(?, specialization),
+                location = COALESCE(?, location),
+                city = COALESCE(?, city),
+                avatar = CASE WHEN ? IS NOT NULL AND ? != '' THEN ? ELSE avatar END
+            WHERE id = ?
+            """, (
+                clean_name, req.email or None, clean_phone if clean_phone else None,
+                req.qualification, req.specialization,
+                req.city, req.city,
+                req.avatar, req.avatar, req.avatar,
+                existing_user["id"]
+            ))
+        else:
+            cursor.execute("""
+            INSERT INTO users (
+                id, phone, name, email, role, qualification, specialization,
+                location, city, avatar, status
+            ) VALUES (
+                ?, ?, ?, ?, 'doctor', ?, ?, ?, ?, ?, 'active'
+            )
+            """, (
+                doc_id, clean_phone, clean_name, req.email or "",
+                req.qualification or "BAMS, MD (Ayurveda)",
+                req.specialization or "Kayachikitsa & Panchakarma",
+                req.city or "Nagpur, Maharashtra",
+                req.city or "Nagpur, Maharashtra",
+                req.avatar or ""
+            ))
         
         conn.commit()
+        
+        # Re-fetch updated row to return exact persisted data
+        cursor.execute("SELECT * FROM doctors WHERE id = ?", (doc_id,))
+        saved_row = cursor.fetchone()
         conn.close()
         
+        saved_dict = dict(saved_row) if saved_row else {}
         return {
             "success": True,
             "message": "Doctor profile and photo updated successfully!",
@@ -1747,14 +1828,14 @@ def update_doctor_profile_endpoint(req: DoctorProfileUpdateRequest):
                 "doctor_id": doc_id,
                 "name": clean_name,
                 "phone": clean_phone,
-                "email": req.email,
-                "qualification": req.qualification,
-                "specialization": req.specialization,
-                "organization": req.organization,
-                "city": req.city,
-                "avatar": req.avatar,
-                "council_reg_number": req.council_reg_number,
-                "status": req.status or "verified"
+                "email": req.email or saved_dict.get("email"),
+                "qualification": req.qualification or saved_dict.get("qualification"),
+                "specialization": req.specialization or saved_dict.get("specialization"),
+                "organization": req.organization or saved_dict.get("organization"),
+                "city": req.city or saved_dict.get("city"),
+                "avatar": saved_dict.get("avatar") or req.avatar,
+                "council_reg_number": req.council_reg_number or saved_dict.get("council_reg_number"),
+                "status": req.status or saved_dict.get("status") or "verified"
             }
         }
     except Exception as e:

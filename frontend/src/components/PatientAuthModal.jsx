@@ -172,7 +172,31 @@ export const PatientAuthModal = ({
           }
         }
 
-        const cachedAvatar = typeof localStorage !== 'undefined' ? localStorage.getItem('zeniva_patient_avatar') : null;
+        const cleanP = userPhone ? userPhone.replace(/\D/g, '').slice(-10) : '';
+        const cachedAvatar = typeof localStorage !== 'undefined' 
+          ? (localStorage.getItem('zeniva_patient_avatar') || (cleanP ? localStorage.getItem(`zeniva_patient_avatar_${cleanP}`) : null))
+          : null;
+
+        let resolvedAvatar = profile.avatar_url || user.user_metadata?.avatar_url || authenticatedPatient?.avatar || cachedAvatar;
+
+        // If avatar is missing or default Unsplash, check Supabase cloud mirror
+        if ((!resolvedAvatar || resolvedAvatar.includes('unsplash.com')) && supabase) {
+          try {
+            const mirrorKey = cleanP ? `ZENIVA_PATIENT_PROFILE_${cleanP}` : `ZENIVA_PATIENT_PROFILE_${cleanEmail}`;
+            const { data: revData } = await supabase
+              .from('doctor_reviews')
+              .select('review_notes')
+              .eq('patient_name', mirrorKey)
+              .order('created_at', { ascending: false })
+              .limit(1);
+            if (revData && revData.length > 0 && revData[0].review_notes) {
+              const parsedNotes = JSON.parse(revData[0].review_notes);
+              if (parsedNotes?.avatar && parsedNotes.avatar.length > 20) {
+                resolvedAvatar = parsedNotes.avatar;
+              }
+            }
+          } catch (mErr) {}
+        }
 
         authenticatedPatient = {
           id: user.id,
@@ -184,7 +208,7 @@ export const PatientAuthModal = ({
           location: profile.city || user.user_metadata?.city || authenticatedPatient?.city || 'Nagpur, Maharashtra',
           prakriti: profile.prakriti || user.user_metadata?.prakriti || doshaFocus,
           dosha: profile.prakriti || user.user_metadata?.prakriti || doshaFocus,
-          avatar: cachedAvatar || profile.avatar_url || user.user_metadata?.avatar_url || authenticatedPatient?.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+          avatar: resolvedAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
           status: 'active',
           isRegistered: true,
           isLoggedIn: true,
@@ -233,6 +257,15 @@ export const PatientAuthModal = ({
       localStorage.setItem('zeniva_current_user', JSON.stringify(authenticatedPatient));
       localStorage.setItem('zeniva_session_expiry', thirtyDaysExpiry.toString());
       localStorage.setItem('zeniva_remember_me', 'true');
+
+      if (authenticatedPatient.avatar && !authenticatedPatient.avatar.includes('unsplash.com')) {
+        localStorage.setItem('zeniva_patient_avatar', authenticatedPatient.avatar);
+        const cleanP = (authenticatedPatient.phone || '').replace(/\D/g, '').slice(-10);
+        if (cleanP) {
+          localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, authenticatedPatient.avatar);
+        }
+        window.dispatchEvent(new CustomEvent('zeniva_patient_avatar_updated', { detail: authenticatedPatient.avatar }));
+      }
 
       // Sync into Admin & Doctor all-patients registry
       const regStr = localStorage.getItem('zeniva_all_patients_registry');

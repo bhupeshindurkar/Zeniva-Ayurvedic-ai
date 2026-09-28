@@ -53,47 +53,83 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
     }
   }, [currentUser]);
 
-  // Load cloud-persisted patient avatar on mount if available
+  // Load cloud-persisted patient avatar on mount if available across Supabase & SQLite
   useEffect(() => {
     const cleanP = (profileData.phone || currentUser.phone || '').replace(/\D/g, '').slice(-10);
-    if (cleanP && supabase) {
-      // 1. Try profiles table
-      supabase
-        .from('profiles')
-        .select('avatar_url')
-        .or(`phone.eq.${cleanP},phone.eq.+91${cleanP},phone.eq.0${cleanP}`)
-        .limit(1)
-        .then(({ data }) => {
-          if (data && data[0]?.avatar_url && data[0].avatar_url.length > 20) {
-            setProfileData(prev => ({ ...prev, avatar: data[0].avatar_url }));
-            localStorage.setItem('zeniva_patient_avatar', data[0].avatar_url);
-            localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, data[0].avatar_url);
-          }
-        })
-        .catch(() => {});
+    const cleanEmail = (profileData.email || currentUser.email || '').trim().toLowerCase();
+    const userId = currentUser.id || '';
 
-      // 2. Also check doctor_reviews backup sync
-      supabase
-        .from('doctor_reviews')
-        .select('review_notes')
-        .eq('patient_name', `ZENIVA_PATIENT_PROFILE_${cleanP}`)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .then(({ data }) => {
-          if (data && data.length > 0 && data[0].review_notes) {
-            try {
-              const cloudP = JSON.parse(data[0].review_notes);
-              if (cloudP?.avatar && (cloudP.avatar.startsWith('data:image') || cloudP.avatar.startsWith('http'))) {
-                setProfileData(prev => ({ ...prev, avatar: cloudP.avatar }));
-                localStorage.setItem('zeniva_patient_avatar', cloudP.avatar);
-                localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, cloudP.avatar);
-              }
-            } catch (e) {}
+    // 1. Supabase Profiles & Auth Metadata
+    if (supabase) {
+      // Check auth user metadata first
+      supabase.auth.getUser().then(({ data }) => {
+        const authAvatar = data?.user?.user_metadata?.avatar_url;
+        if (authAvatar && authAvatar.length > 20) {
+          setProfileData(prev => ({ ...prev, avatar: authAvatar }));
+          localStorage.setItem('zeniva_patient_avatar', authAvatar);
+          if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, authAvatar);
+        }
+      }).catch(() => {});
+
+      // Query profiles table by id, phone, or email
+      let query = supabase.from('profiles').select('avatar_url, full_name, phone, email');
+      if (userId) {
+        query = query.eq('id', userId);
+      } else if (cleanP) {
+        query = query.or(`phone.eq.${cleanP},phone.eq.+91${cleanP},phone.eq.0${cleanP}`);
+      } else if (cleanEmail) {
+        query = query.eq('email', cleanEmail);
+      }
+
+      query.limit(1).then(({ data }) => {
+        if (data && data[0]?.avatar_url && data[0].avatar_url.length > 20) {
+          setProfileData(prev => ({ ...prev, avatar: data[0].avatar_url }));
+          localStorage.setItem('zeniva_patient_avatar', data[0].avatar_url);
+          if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, data[0].avatar_url);
+        }
+      }).catch(() => {});
+
+      // Check doctor_reviews mirror backup sync
+      const mirrorKey = cleanP ? `ZENIVA_PATIENT_PROFILE_${cleanP}` : (cleanEmail ? `ZENIVA_PATIENT_PROFILE_${cleanEmail}` : null);
+      if (mirrorKey) {
+        supabase
+          .from('doctor_reviews')
+          .select('review_notes')
+          .eq('patient_name', mirrorKey)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .then(({ data }) => {
+            if (data && data.length > 0 && data[0].review_notes) {
+              try {
+                const cloudP = JSON.parse(data[0].review_notes);
+                if (cloudP?.avatar && (cloudP.avatar.startsWith('data:image') || cloudP.avatar.startsWith('http'))) {
+                  setProfileData(prev => ({ ...prev, avatar: cloudP.avatar }));
+                  localStorage.setItem('zeniva_patient_avatar', cloudP.avatar);
+                  if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, cloudP.avatar);
+                }
+              } catch (e) {}
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    // 2. Fetch from Backend SQLite
+    const searchTarget = cleanEmail || cleanP;
+    if (searchTarget) {
+      fetch(getApiUrl(`/api/user/profile/${searchTarget}`))
+        .then(res => res.json())
+        .then(data => {
+          const userObj = data?.user || data?.patient;
+          if (userObj?.avatar && userObj.avatar.length > 20) {
+            setProfileData(prev => ({ ...prev, avatar: userObj.avatar }));
+            localStorage.setItem('zeniva_patient_avatar', userObj.avatar);
+            if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, userObj.avatar);
           }
         })
         .catch(() => {});
     }
-  }, [profileData.phone, currentUser.phone]);
+  }, [profileData.phone, currentUser.phone, profileData.email, currentUser.email, currentUser.id]);
 
   // Clean 10-digit number display
   const rawPhone = (profileData.phone || currentUser.phone || '').replace(/\D/g, '').slice(-10);
@@ -104,10 +140,22 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
   // Helper to sync to Supabase & Backend with 100% cloud persistence
   const syncProfileRemotely = async (updatedUser) => {
     const cleanP = rawPhone || (updatedUser.phone ? updatedUser.phone.replace(/\D/g, '').slice(-10) : '');
+    const cleanEmail = (updatedUser.email || '').trim().toLowerCase();
 
-    // 1. Supabase Profiles Table Update
+    // 1. Supabase Profiles & Auth Metadata Update
     try {
       if (supabase) {
+        // Sync directly into auth user_metadata so email/password login automatically restores avatar even after 1 year
+        try {
+          await supabase.auth.updateUser({
+            data: {
+              avatar_url: updatedUser.avatar,
+              full_name: updatedUser.name
+            }
+          });
+        } catch (authMetaErr) {}
+
+        // Update profiles table
         try {
           await supabase
             .from('profiles')
@@ -115,6 +163,7 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
               avatar_url: updatedUser.avatar,
               full_name: updatedUser.name,
               phone: cleanP || updatedUser.phone,
+              email: cleanEmail || updatedUser.email,
               city: updatedUser.location || updatedUser.city,
               prakriti: updatedUser.prakriti,
               age: updatedUser.age,
@@ -122,17 +171,33 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
               blood_group: updatedUser.bloodGroup || updatedUser.blood_group,
               diet: updatedUser.diet
             })
-            .or(`phone.eq.${cleanP},phone.eq.+91${cleanP},phone.eq.0${cleanP},email.eq.${updatedUser.email || ''},id.eq.${updatedUser.id || ''}`);
+            .or(`phone.eq.${cleanP},phone.eq.+91${cleanP},phone.eq.0${cleanP},email.eq.${cleanEmail},id.eq.${updatedUser.id || ''}`);
         } catch (upErr) {}
 
-        // Fallback guaranteed cloud persistence in doctor_reviews table
-        if (cleanP) {
+        // Guaranteed upsert if user has an ID
+        if (updatedUser.id && !updatedUser.id.startsWith('PAT-')) {
+          try {
+            await supabase.from('profiles').upsert({
+              id: updatedUser.id,
+              avatar_url: updatedUser.avatar,
+              full_name: updatedUser.name,
+              phone: cleanP || updatedUser.phone,
+              email: cleanEmail || updatedUser.email,
+              city: updatedUser.location || updatedUser.city,
+              role: 'patient'
+            });
+          } catch (upsertErr) {}
+        }
+
+        // Fallback guaranteed cloud persistence in doctor_reviews table mirror
+        const mirrorKey = cleanP ? `ZENIVA_PATIENT_PROFILE_${cleanP}` : `ZENIVA_PATIENT_PROFILE_${cleanEmail}`;
+        if (mirrorKey) {
           try {
             await supabase
               .from('doctor_reviews')
               .insert([{
                 doctor_name: 'PATIENT_PROFILE_SYNC',
-                patient_name: `ZENIVA_PATIENT_PROFILE_${cleanP}`,
+                patient_name: mirrorKey,
                 symptoms: 'Patient Avatar & Profile Update',
                 review_notes: JSON.stringify(updatedUser),
                 status: 'verified'
