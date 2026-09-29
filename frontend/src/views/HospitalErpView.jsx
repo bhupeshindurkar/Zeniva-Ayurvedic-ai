@@ -6,7 +6,7 @@ import {
   Trash2, Edit, Save, X, Bed, Sparkles, Stethoscope, 
   Layers, ChevronRight, Activity, ArrowUpRight, TrendingUp,
   Package, ShieldCheck, Check, Phone, MapPin, Receipt,
-  BadgePercent, FileSpreadsheet, Send, ArrowRight, ArrowLeft
+  BadgePercent, FileSpreadsheet, Send, ArrowRight, ArrowLeft, Lock
 } from 'lucide-react';
 import { ZenivaLogo, MortarPestleGraphic } from '../components/ZenivaIcons';
 import { getApiUrl } from '../lib/api';
@@ -88,7 +88,17 @@ const DEFAULT_ERP_DATA = {
   ]
 };
 
-export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSelectTab = () => {} }) => {
+export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSelectTab = () => {} }) => {
+  // Strict Role-Based Access Control (RBAC):
+  // 1. Public / Home / Guest: 100% Read-Only Showcase Mode (No editing, no adding medicines, no billing creation).
+  // 2. Doctor: Clinical Operations (Patient Invoicing, Panchakarma booking, IPD Bed admissions).
+  // 3. Super Admin: Master Access (Inventory additions, stock adjustments, full hospital operations).
+  const isAdmin = currentRole === 'admin';
+  const isDoctor = currentRole === 'doctor';
+  const canManageInventory = isAdmin;
+  const canEditClinical = isAdmin || isDoctor;
+  const canEdit = isAdmin || isDoctor;
+
   // Navigation sub-tabs inside ERP
   const [activeErpTab, setActiveErpTab] = useState('inventory'); // 'inventory' | 'billing' | 'panchakarma' | 'ipd' | 'analytics'
   const [erpData, setErpData] = useState(() => {
@@ -233,10 +243,10 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
   });
 
   // --- ACTIONS ---
-  // 1. Add Medicine
+  // 1. Add Medicine (Admin Only)
   const handleAddMedicine = async (e) => {
     e.preventDefault();
-    if (!medForm.name.trim()) return;
+    if (!canManageInventory || !medForm.name.trim()) return;
 
     const newMed = {
       ...medForm,
@@ -265,8 +275,9 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
     showToast(`✓ ${newMed.name} added to Pharmacy Inventory!`);
   };
 
-  // 2. Adjust Stock Quantity
+  // 2. Adjust Stock Quantity (Admin Only)
   const handleUpdateStock = async (medId, delta) => {
+    if (!canManageInventory) return;
     const updatedInv = (erpData.inventory || []).map(item => {
       if (item.id === medId) {
         const newQty = Math.max(0, (item.stock_quantity || 0) + delta);
@@ -292,10 +303,10 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
     showToast(`✓ Stock quantity updated!`);
   };
 
-  // 3. Create Invoice
+  // 3. Create Invoice (Doctor / Admin Only)
   const handleCreateInvoice = async (e) => {
     e.preventDefault();
-    if (!invForm.patient_name.trim()) return;
+    if (!canEditClinical || !invForm.patient_name.trim()) return;
 
     const medCharges = invForm.selectedItems.reduce((acc, curr) => acc + (curr.total || 0), 0);
     const subtotal = Number(invForm.consultation_fee) + medCharges - Number(invForm.discount);
@@ -366,10 +377,10 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
     showToast(`✓ Invoice ${newInvoice.invoice_no} generated successfully!`);
   };
 
-  // 4. Book Panchakarma
+  // 4. Book Panchakarma (Doctor / Admin Only)
   const handleBookPk = async (e) => {
     e.preventDefault();
-    if (!pkForm.patient_name.trim()) return;
+    if (!canEditClinical || !pkForm.patient_name.trim()) return;
 
     const newPk = {
       ...pkForm,
@@ -399,10 +410,10 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
     showToast(`✓ Panchakarma session booked for ${newPk.patient_name}!`);
   };
 
-  // 5. Admit Patient to Bed
+  // 5. Admit Patient to Bed (Doctor / Admin Only)
   const handleAdmitIpd = async (e) => {
     e.preventDefault();
-    if (!ipdForm.patient_name.trim() || !ipdForm.bed_number) return;
+    if (!canEditClinical || !ipdForm.patient_name.trim() || !ipdForm.bed_number) return;
 
     const updatedBeds = (erpData.ipd_beds || []).map(b => {
       if (b.bed_number === ipdForm.bed_number) {
@@ -437,8 +448,9 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
     showToast(`✓ ${ipdForm.patient_name} admitted to ${ipdForm.bed_number}!`);
   };
 
-  // 6. Discharge Patient from Bed
+  // 6. Discharge Patient from Bed (Doctor / Admin Only)
   const handleDischargeBed = async (bedNumber) => {
+    if (!canEditClinical) return;
     const updatedBeds = (erpData.ipd_beds || []).map(b => {
       if (b.bed_number === bedNumber) {
         return {
@@ -506,8 +518,8 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
           </button>
 
           <span className="text-[11px] font-mono text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-lg flex items-center gap-1.5 shadow-inner">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            Role: {currentRole === 'admin' ? '👑 Super Admin Master' : currentRole === 'doctor' ? '👨‍⚕️ Ayurvedic Doctor' : '👤 Zeniva Clinical Staff'}
+            <span className={`w-2 h-2 rounded-full ${isAdmin ? 'bg-amber-400' : isDoctor ? 'bg-emerald-400' : 'bg-stone-400'}`}></span>
+            Role: {isAdmin ? '👑 Super Admin Master (Full Access)' : isDoctor ? '👨‍⚕️ Ayurvedic Doctor (Clinical Billing)' : '🌐 Public Showcase (Read-Only Preview)'}
           </span>
         </div>
 
@@ -529,32 +541,80 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setIsInvoiceModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
-            >
-              <Receipt className="w-4 h-4" />
-              <span>+ New Invoice</span>
-            </button>
+          {isAdmin ? (
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={() => setIsInvoiceModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
+              >
+                <Receipt className="w-4 h-4" />
+                <span>+ New Invoice</span>
+              </button>
 
-            <button
-              onClick={() => setIsAddMedModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
-            >
-              <Package className="w-4 h-4" />
-              <span>+ Add Medicine</span>
-            </button>
+              <button
+                onClick={() => setIsAddMedModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
+              >
+                <Package className="w-4 h-4" />
+                <span>+ Add Medicine</span>
+              </button>
 
-            <button
-              onClick={loadBackendData}
-              disabled={isLoading}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 hover:text-white transition-colors cursor-pointer"
-              title="Refresh Data"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+              <button
+                onClick={loadBackendData}
+                disabled={isLoading}
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 hover:text-white transition-colors cursor-pointer"
+                title="Refresh Data"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          ) : isDoctor ? (
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={() => setIsInvoiceModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
+              >
+                <Receipt className="w-4 h-4" />
+                <span>+ New Invoice</span>
+              </button>
+
+              <button
+                onClick={loadBackendData}
+                disabled={isLoading}
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 hover:text-white transition-colors cursor-pointer"
+                title="Refresh Data"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-stone-300 flex items-center gap-1.5 text-xs font-medium">
+                <Lock className="w-3.5 h-3.5 text-amber-300" />
+                <span>Read-Only Preview Mode</span>
+              </div>
+
+              <button
+                onClick={() => {
+                  window.location.hash = '#login/doctor';
+                  window.location.reload();
+                }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-stone-950 font-bold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 hover:scale-102"
+              >
+                <Lock className="w-3.5 h-3.5 text-stone-950" />
+                <span>Doctor / Admin Login →</span>
+              </button>
+
+              <button
+                onClick={loadBackendData}
+                disabled={isLoading}
+                className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 hover:text-white transition-colors cursor-pointer"
+                title="Refresh Data"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Live Metrics Grid */}
@@ -728,22 +788,28 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => handleUpdateStock(item.id, -1)}
-                          className="w-8 h-8 rounded-xl bg-stone-100 active:bg-rose-100 active:text-rose-700 text-stone-800 font-bold flex items-center justify-center cursor-pointer text-sm"
-                          title="Dispense 1 unit"
-                        >
-                          -
-                        </button>
-                        <button
-                          onClick={() => handleUpdateStock(item.id, 5)}
-                          className="px-2.5 h-8 rounded-xl bg-purple-100 active:bg-emerald-100 text-purple-900 font-bold flex items-center justify-center text-xs cursor-pointer"
-                          title="Add 5 units from stock room"
-                        >
-                          +5
-                        </button>
-                      </div>
+                      {canManageInventory ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleUpdateStock(item.id, -1)}
+                            className="w-8 h-8 rounded-xl bg-stone-100 active:bg-rose-100 active:text-rose-700 text-stone-800 font-bold flex items-center justify-center cursor-pointer text-sm"
+                            title="Dispense 1 unit"
+                          >
+                            -
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStock(item.id, 5)}
+                            className="px-2.5 h-8 rounded-xl bg-purple-100 active:bg-emerald-100 text-purple-900 font-bold flex items-center justify-center text-xs cursor-pointer"
+                            title="Add 5 units from stock room"
+                          >
+                            +5
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-mono font-medium text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200">
+                          In Stock
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -762,7 +828,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
                       <th className="py-3.5 px-3 text-center">In Stock</th>
                       <th className="py-3.5 px-3 text-right">Selling Price</th>
                       <th className="py-3.5 px-3">Location</th>
-                      <th className="py-3.5 px-4 text-center">Stock Adjustment</th>
+                      <th className="py-3.5 px-4 text-center">{canEdit ? 'Stock Adjustment' : 'Pharmacy Status'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
@@ -815,22 +881,28 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
                           </td>
 
                           <td className="py-3 px-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                onClick={() => handleUpdateStock(item.id, -1)}
-                                className="w-7 h-7 rounded-lg bg-stone-100 hover:bg-rose-100 hover:text-rose-700 text-stone-700 font-bold flex items-center justify-center cursor-pointer transition-colors"
-                                title="Dispense 1 unit"
-                              >
-                                -
-                              </button>
-                              <button
-                                onClick={() => handleUpdateStock(item.id, 5)}
-                                className="px-2 h-7 rounded-lg bg-stone-100 hover:bg-emerald-100 hover:text-emerald-700 text-stone-700 font-bold flex items-center justify-center text-xs cursor-pointer transition-colors"
-                                title="Add 5 units from stock room"
-                              >
-                                +5
-                              </button>
-                            </div>
+                            {canManageInventory ? (
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  onClick={() => handleUpdateStock(item.id, -1)}
+                                  className="w-7 h-7 rounded-lg bg-stone-100 hover:bg-rose-100 hover:text-rose-700 text-stone-700 font-bold flex items-center justify-center cursor-pointer transition-colors"
+                                  title="Dispense 1 unit"
+                                >
+                                  -
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateStock(item.id, 5)}
+                                  className="px-2 h-7 rounded-lg bg-stone-100 hover:bg-emerald-100 hover:text-emerald-700 text-stone-700 font-bold flex items-center justify-center text-xs cursor-pointer transition-colors"
+                                  title="Add 5 units from stock room"
+                                >
+                                  +5
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] font-mono font-medium text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                                Verified Stock
+                              </span>
+                            )}
                           </td>
                         </tr>
                       );
@@ -853,13 +925,20 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
                 <p className="text-xs text-stone-500">Computerized, GST-compliant receipts with auto inventory stock deduction.</p>
               </div>
 
-              <button
-                onClick={() => setIsInvoiceModalOpen(true)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Create New Patient Bill</span>
-              </button>
+              {canEdit ? (
+                <button
+                  onClick={() => setIsInvoiceModalOpen(true)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create New Patient Bill</span>
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-stone-500 bg-stone-100 border border-stone-200 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Billing Generation Restricted to Staff</span>
+                </span>
+              )}
             </div>
 
             {/* Invoices List */}
@@ -935,13 +1014,20 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
                 <p className="text-xs text-stone-500">Live booking for Shirodhara, Droni massage tables, Swedana steam & Basti packages.</p>
               </div>
 
-              <button
-                onClick={() => setIsBookPkModalOpen(true)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Book Panchakarma Session</span>
-              </button>
+              {canEdit ? (
+                <button
+                  onClick={() => setIsBookPkModalOpen(true)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Book Panchakarma Session</span>
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-stone-500 bg-stone-100 border border-stone-200 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Therapy Room Booking Restricted to Staff</span>
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -995,13 +1081,20 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
                 <p className="text-xs text-stone-500">Live bed allocation for Ayurvedic residential detoxification & panchakarma packages.</p>
               </div>
 
-              <button
-                onClick={() => setIsAdmitIpdModalOpen(true)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Admit Patient to Bed</span>
-              </button>
+              {canEdit ? (
+                <button
+                  onClick={() => setIsAdmitIpdModalOpen(true)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Admit Patient to Bed</span>
+                </button>
+              ) : (
+                <span className="text-xs font-medium text-stone-500 bg-stone-100 border border-stone-200 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-stone-400" />
+                  <span>Bed Allocation Restricted to Staff</span>
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -1035,12 +1128,14 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
 
                         <div className="flex items-center justify-between pt-2">
                           <span className="font-mono text-stone-700 font-bold">₹{b.daily_rate}/day</span>
-                          <button
-                            onClick={() => handleDischargeBed(b.bed_number)}
-                            className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs cursor-pointer transition-colors"
-                          >
-                            Discharge
-                          </button>
+                          {canEdit && (
+                            <button
+                              onClick={() => handleDischargeBed(b.bed_number)}
+                              className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs cursor-pointer transition-colors"
+                            >
+                              Discharge
+                            </button>
+                          )}
                         </div>
                       </div>
                     ) : (

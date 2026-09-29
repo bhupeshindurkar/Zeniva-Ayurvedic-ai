@@ -4,7 +4,7 @@ import {
   Leaf, Activity, BookOpen, Star, Calendar, Users, Award,
   CheckCircle2, Compass, MapPin, PhoneCall, Volume2, Clock,
   ChevronRight, Flame, Wind, Droplets, UserCheck, Shield, Zap,
-  FileText, Download
+  FileText, Download, Database, Building, Receipt, Package
 } from 'lucide-react';
 import { ZenivaLogo } from '../components/ZenivaIcons';
 
@@ -339,6 +339,57 @@ export const PublicLandingView = ({
               <span>Get Personalized Care Plan</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2.5 ZENIVA AYURVEDIC HOSPITAL ERP & PHARMACY SHOWCASE BANNER             */}
+      {/* ========================================================================= */}
+      <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#140824] via-[#1C1030] to-[#2B1245] p-6 sm:p-8 text-white border border-[#482878]/60 shadow-xl">
+        <div className="absolute inset-0 bg-[radial-gradient(#7c3aed20_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="max-w-2xl space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-mono tracking-wider uppercase font-bold flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                Hospital Operating System
+              </span>
+              <span className="text-[11px] text-stone-300 font-mono">ERP v2.4 · AYUSH Ready</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-serif font-black text-[#F5EEDC] tracking-tight">
+              Zeniva Ayurvedic Hospital ERP & Pharmacy Suite
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
+              Complete computerized clinical operations: Classical Aushadhi Inventory with batch expiry tracking, GST Billing with instant print receipts, Panchakarma Bed Scheduler, and IPD Ward Management.
+            </p>
+            <div className="pt-2 flex flex-wrap items-center gap-2 text-xs text-stone-300 font-mono">
+              <span className="bg-white/10 px-3 py-1 rounded-lg border border-white/10 flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-amber-300" />
+                <span>Herbals & Vatis Catalog</span>
+              </span>
+              <span className="bg-white/10 px-3 py-1 rounded-lg border border-white/10 flex items-center gap-1.5">
+                <Receipt className="w-3.5 h-3.5 text-emerald-400" />
+                <span>GST Tax Invoicing</span>
+              </span>
+              <span className="bg-white/10 px-3 py-1 rounded-lg border border-white/10 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-cyan-300" />
+                <span>Panchakarma & IPD Beds</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row lg:flex-col items-stretch gap-3 shrink-0 w-full sm:w-auto">
+            <button
+              onClick={() => onSelectTab('hospital_erp')}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-stone-950 font-bold text-sm shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-102 active:scale-95"
+            >
+              <Database className="w-4 h-4 text-stone-950" />
+              <span>Explore Hospital ERP →</span>
+            </button>
+            <span className="text-[11px] text-center text-stone-400 font-mono">
+              🔒 Live Read-Only Preview for Visitors
+            </span>
           </div>
         </div>
       </div>
