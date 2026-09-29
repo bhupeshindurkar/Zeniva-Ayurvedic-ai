@@ -2262,6 +2262,335 @@ def create_whatsapp_session(req: WhatsAppSessionRequest):
             "whatsapp_group_url": "https://chat.whatsapp.com/G4YxR1VfL5mC7oD48ZenAi"
         }
 
+# =====================================================================
+# ZENIVA AYURVEDIC HOSPITAL & CLINIC ERP APIS
+# =====================================================================
+
+class ERPAddMedicineRequest(BaseModel):
+    name: str
+    sanskrit_name: Optional[str] = ""
+    form: Optional[str] = "Churna"
+    category: Optional[str] = "Digestive & Agni"
+    batch_no: Optional[str] = ""
+    mfg_date: Optional[str] = ""
+    expiry_date: Optional[str] = ""
+    stock_quantity: int = 20
+    min_threshold: int = 10
+    unit: Optional[str] = "Bottles"
+    cost_price: float = 100.0
+    selling_price: float = 180.0
+    rack_location: Optional[str] = "Shelf A-1"
+    manufacturer: Optional[str] = "Zeniva Authentic Pharmacy"
+
+class ERPUpdateStockRequest(BaseModel):
+    id: str
+    change_quantity: int # can be positive or negative
+    new_status: Optional[str] = None
+
+class ERPCreateInvoiceRequest(BaseModel):
+    patient_name: str
+    patient_phone: Optional[str] = ""
+    patient_id: Optional[str] = ""
+    doctor_name: Optional[str] = "Dr. Sohil Indurkar"
+    consultation_fee: float = 500.0
+    medicine_charges: float = 0.0
+    panchakarma_charges: float = 0.0
+    discount: float = 0.0
+    gst_percent: float = 5.0
+    payment_mode: Optional[str] = "UPI"
+    payment_status: Optional[str] = "Paid"
+    items: List[Dict[str, Any]] = []
+
+class ERPBookPanchakarmaRequest(BaseModel):
+    patient_name: str
+    patient_phone: Optional[str] = ""
+    therapy_name: str
+    therapist_name: Optional[str] = "Senior Therapist"
+    room_name: Optional[str] = "Suite 1 - Shirodhara Hall"
+    start_date: Optional[str] = ""
+    time_slot: Optional[str] = "09:00 AM - 10:00 AM"
+    days_total: int = 7
+    notes: Optional[str] = ""
+    charge_per_session: float = 1500.0
+
+class ERPIpdAdmitRequest(BaseModel):
+    bed_number: str
+    patient_name: str
+    patient_phone: Optional[str] = ""
+    admission_date: Optional[str] = ""
+    discharge_date: Optional[str] = ""
+    prakriti: Optional[str] = "Vata-Pitta"
+    assigned_doctor: Optional[str] = "Dr. Sohil Indurkar"
+    diet_instructions: Optional[str] = "Warm Kitchari & cumin water"
+    daily_rate: float = 1800.0
+
+@app.get("/api/erp/overview")
+def get_erp_overview():
+    """Returns complete live data for Zeniva Hospital ERP."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # 1. Fetch Inventory
+        cursor.execute("SELECT * FROM erp_inventory ORDER BY created_at DESC")
+        inventory = [dict(row) for row in cursor.fetchall()]
+
+        # 2. Fetch Invoices
+        cursor.execute("SELECT * FROM erp_invoices ORDER BY created_at DESC LIMIT 50")
+        invoices = [dict(row) for row in cursor.fetchall()]
+        for inv in invoices:
+            if inv.get("items_json"):
+                try:
+                    inv["items"] = json.loads(inv["items_json"])
+                except Exception:
+                    inv["items"] = []
+
+        # 3. Fetch Panchakarma Sessions
+        cursor.execute("SELECT * FROM erp_panchakarma ORDER BY created_at DESC")
+        panchakarma = [dict(row) for row in cursor.fetchall()]
+
+        # 4. Fetch IPD Beds
+        cursor.execute("SELECT * FROM erp_ipd_beds ORDER BY bed_number ASC")
+        beds = [dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+
+        # Calculate Statistics
+        total_items = len(inventory)
+        low_stock_items = sum(1 for item in inventory if item.get("stock_quantity", 0) <= item.get("min_threshold", 10))
+        total_invoices = len(invoices)
+        total_revenue = sum(inv.get("net_total", 0) for inv in invoices if inv.get("payment_status") == "Paid")
+        active_pk = sum(1 for p in panchakarma if p.get("status") in ["Scheduled", "In-Progress"])
+        occupied_beds = sum(1 for b in beds if b.get("is_occupied") == 1)
+        total_beds = len(beds)
+
+        return {
+            "success": True,
+            "data": {
+                "inventory": inventory,
+                "invoices": invoices,
+                "panchakarma": panchakarma,
+                "ipd_beds": beds,
+                "stats": {
+                    "total_inventory_items": total_items,
+                    "low_stock_items": low_stock_items,
+                    "total_invoices_count": total_invoices,
+                    "total_revenue": round(total_revenue, 2),
+                    "active_panchakarma": active_pk,
+                    "occupied_beds": occupied_beds,
+                    "total_beds": total_beds,
+                    "bed_occupancy_rate": f"{round((occupied_beds / max(1, total_beds)) * 100, 1)}%"
+                }
+            }
+        }
+    except Exception as e:
+        print("[ERP Overview Error]:", e)
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/erp/inventory/add")
+def add_erp_inventory(req: ERPAddMedicineRequest):
+    """Add a new medicine into the Ayurvedic Pharmacy inventory."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        med_id = f"med_{uuid.uuid4().hex[:8]}"
+        batch = req.batch_no or f"BAT-{datetime.now().strftime('%Y%m')}-{random.randint(10, 99)}"
+        status = "low_stock" if req.stock_quantity <= req.min_threshold else "available"
+
+        cursor.execute("""
+        INSERT INTO erp_inventory (id, name, sanskrit_name, form, category, batch_no, mfg_date, expiry_date, stock_quantity, min_threshold, unit, cost_price, selling_price, rack_location, manufacturer, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            med_id, req.name, req.sanskrit_name, req.form, req.category, batch,
+            req.mfg_date or datetime.now().strftime("%Y-%m-%d"),
+            req.expiry_date or (datetime.now() + timedelta(days=730)).strftime("%Y-%m-%d"),
+            req.stock_quantity, req.min_threshold, req.unit, req.cost_price,
+            req.selling_price, req.rack_location, req.manufacturer, status
+        ))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "message": "Medicine added successfully", "id": med_id}
+    except Exception as e:
+        print("[ERP Add Medicine Error]:", e)
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/erp/inventory/update-stock")
+def update_erp_stock(req: ERPUpdateStockRequest):
+    """Adjust inventory stock levels with auto threshold re-calculation."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT stock_quantity, min_threshold FROM erp_inventory WHERE id = ?", (req.id,))
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return {"success": False, "error": "Item not found"}
+
+        current_qty = row["stock_quantity"]
+        threshold = row["min_threshold"]
+        new_qty = max(0, current_qty + req.change_quantity)
+        new_status = req.new_status or ("low_stock" if new_qty <= threshold else "available")
+
+        cursor.execute("""
+        UPDATE erp_inventory
+        SET stock_quantity = ?, status = ?
+        WHERE id = ?
+        """, (new_qty, new_status, req.id))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "new_quantity": new_qty, "status": new_status}
+    except Exception as e:
+        print("[ERP Update Stock Error]:", e)
+        return {"success": False, "error": str(e)}
+
+@app.delete("/api/erp/inventory/{item_id}")
+def delete_erp_inventory_item(item_id: str):
+    """Delete an item from inventory."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM erp_inventory WHERE id = ?", (item_id,))
+        conn.commit()
+        conn.close()
+        return {"success": True, "message": "Item deleted"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/erp/billing/create")
+def create_erp_invoice(req: ERPCreateInvoiceRequest):
+    """Generate a computerized GST Invoice and auto-deduct medicines from inventory."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        invoice_id = f"inv_{uuid.uuid4().hex[:8]}"
+        date_code = datetime.now().strftime("%Y%m")
+        cursor.execute("SELECT COUNT(*) FROM erp_invoices")
+        count = cursor.fetchone()[0] + 1
+        invoice_no = f"ZEN-INV-{date_code}-{count:03d}"
+
+        # Subtotals
+        subtotal = req.consultation_fee + req.medicine_charges + req.panchakarma_charges - req.discount
+        gst_amount = round(subtotal * (req.gst_percent / 100.0), 2)
+        net_total = round(subtotal + gst_amount, 2)
+
+        # Store Invoice
+        cursor.execute("""
+        INSERT INTO erp_invoices (id, invoice_no, patient_name, patient_phone, patient_id, doctor_name, consultation_fee, medicine_charges, panchakarma_charges, discount, gst_amount, net_total, payment_mode, payment_status, items_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            invoice_id, invoice_no, req.patient_name, req.patient_phone, req.patient_id,
+            req.doctor_name, req.consultation_fee, req.medicine_charges,
+            req.panchakarma_charges, req.discount, gst_amount, net_total,
+            req.payment_mode, req.payment_status, json.dumps(req.items)
+        ))
+
+        # Auto-deduct medicines from inventory
+        for item in req.items:
+            med_id = item.get("id") or item.get("med_id")
+            qty = int(item.get("qty", 1))
+            if med_id:
+                cursor.execute("""
+                UPDATE erp_inventory 
+                SET stock_quantity = MAX(0, stock_quantity - ?),
+                    status = CASE WHEN (stock_quantity - ?) <= min_threshold THEN 'low_stock' ELSE 'available' END
+                WHERE id = ?
+                """, (qty, qty, med_id))
+
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "invoice_id": invoice_id,
+            "invoice_no": invoice_no,
+            "net_total": net_total,
+            "message": "Invoice generated and medicine stock updated successfully"
+        }
+    except Exception as e:
+        print("[ERP Billing Invoice Error]:", e)
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/erp/panchakarma/book")
+def book_erp_panchakarma(req: ERPBookPanchakarmaRequest):
+    """Book a Panchakarma session or package."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        pk_id = f"pk_{uuid.uuid4().hex[:8]}"
+        start_d = req.start_date or datetime.now().strftime("%Y-%m-%d")
+
+        cursor.execute("""
+        INSERT INTO erp_panchakarma (id, patient_name, patient_phone, therapy_name, therapist_name, room_name, start_date, time_slot, days_total, days_completed, status, notes, charge_per_session)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            pk_id, req.patient_name, req.patient_phone, req.therapy_name,
+            req.therapist_name, req.room_name, start_d, req.time_slot,
+            req.days_total, 1, "Scheduled", req.notes, req.charge_per_session
+        ))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "id": pk_id, "message": "Panchakarma therapy booked"}
+    except Exception as e:
+        print("[ERP Panchakarma Error]:", e)
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/erp/ipd/admit")
+def admit_erp_ipd(req: ERPIpdAdmitRequest):
+    """Admit patient to an IPD bed."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        adm_date = req.admission_date or datetime.now().strftime("%Y-%m-%d")
+
+        cursor.execute("""
+        UPDATE erp_ipd_beds
+        SET patient_name = ?, patient_phone = ?, admission_date = ?, discharge_date = ?,
+            prakriti = ?, assigned_doctor = ?, diet_instructions = ?, is_occupied = 1, daily_rate = ?
+        WHERE bed_number = ?
+        """, (
+            req.patient_name, req.patient_phone, adm_date, req.discharge_date,
+            req.prakriti, req.assigned_doctor, req.diet_instructions, req.daily_rate,
+            req.bed_number
+        ))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "message": f"Patient admitted to {req.bed_number}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/erp/ipd/discharge")
+def discharge_erp_ipd(payload: Dict[str, str]):
+    """Discharge patient from an IPD bed."""
+    try:
+        bed_number = payload.get("bed_number")
+        if not bed_number:
+            return {"success": False, "error": "Bed number is required"}
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+        UPDATE erp_ipd_beds
+        SET patient_name = NULL, patient_phone = NULL, admission_date = NULL, discharge_date = NULL,
+            prakriti = NULL, is_occupied = 0
+        WHERE bed_number = ?
+        """, (bed_number,))
+        conn.commit()
+        conn.close()
+
+        return {"success": True, "message": f"Bed {bed_number} is now vacant and sanitized"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+

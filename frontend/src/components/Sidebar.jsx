@@ -63,6 +63,7 @@ export const Sidebar = ({
   // Public Nav items (Shown on Zeniva overview dashboard before patient login)
   const publicNav = [
     { id: 'home', label: 'Zeniva Overview', icon: Home },
+    { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database },
     { id: 'opportunities', label: 'Clinical Opportunities', icon: Briefcase },
     { id: 'insights', label: 'Ayurvedic AI Features', icon: Award },
     { id: 'consultation', label: 'Find Vaidyas & Clinics', icon: Stethoscope },
@@ -77,6 +78,7 @@ export const Sidebar = ({
     { id: 'profile', label: 'My Profile', icon: User, action: onOpenProfile },
     { id: 'dosha', label: 'Health Assessment', icon: Activity },
     { id: 'symptoms', label: 'Symptom Checker', icon: HeartPulse },
+    { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database },
     { id: 'opportunities', label: 'Clinical & Research Opps', icon: Briefcase },
     { id: 'consultation', label: 'Consultation', icon: Stethoscope },
     { id: 'herbs', label: 'Herbal Recommendations', icon: Sparkles },
@@ -164,6 +166,7 @@ export const Sidebar = ({
 
     { id: 'admin_notifications', label: 'Notifications', icon: Bell, type: 'single' },
     { id: 'admin_analytics', label: 'Reports', icon: FileBarChart, type: 'single' },
+    { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database, type: 'single' },
     { id: 'admin_security', label: 'Security & Audit', icon: ShieldAlert, type: 'single' },
     { id: 'insights', label: 'System Insights & Poster', icon: Award, type: 'single' },
     { id: 'admin_settings', label: 'Settings', icon: Settings, type: 'single' },
@@ -201,6 +204,7 @@ export const Sidebar = ({
       type: 'section',
       title: 'MANAGE',
       items: [
+        { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database },
         { id: 'doc_appointments', label: 'Appointments', icon: Calendar },
         { id: 'doc_patients', label: 'Patients', icon: Users },
         { id: 'doc_consultations', label: 'Consultations', icon: Stethoscope },

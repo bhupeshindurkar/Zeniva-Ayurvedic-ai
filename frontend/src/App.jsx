@@ -20,6 +20,7 @@ import { WebsiteInsightsView } from './views/WebsiteInsightsView';
 import { PublicLandingView } from './views/PublicLandingView';
 import { TeamContributorsView } from './views/TeamContributorsView';
 import { OpportunitiesView } from './views/OpportunitiesView';
+import { HospitalErpView } from './views/HospitalErpView';
 import { ContactUsView } from './views/ContactUsView';
 import { PatientAuthModal } from './components/PatientAuthModal';
 import { AppointmentModal } from './components/AppointmentModal';
@@ -194,6 +195,14 @@ const parseUrlState = () => {
       role: 'public',
       authView: 'authenticated',
       tab: parts[1] || 'home'
+    };
+  }
+
+  if (hash === 'erp' || hash === 'hospital_erp' || hash === 'hospital-erp') {
+    return {
+      role: 'public',
+      authView: 'authenticated',
+      tab: 'hospital_erp'
     };
   }
 
@@ -1010,7 +1019,13 @@ export default function App() {
 
         {/* Views Router */}
         <main className="flex-1">
-          {currentRole === 'public' ? (
+          {activeTab === 'hospital_erp' || activeTab === 'erp' ? (
+            <HospitalErpView
+              currentUser={currentUser}
+              currentRole={currentRole}
+              onSelectTab={(tabId) => setActiveTab(tabId)}
+            />
+          ) : currentRole === 'public' ? (
             activeTab === 'insights' ? (
               <WebsiteInsightsView
                 currentUser={currentUser}
