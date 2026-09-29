@@ -1881,6 +1881,42 @@ export const AdminDashboard = ({
       {activeTab === 'admin_dashboard' && (
         <div className="space-y-6">
           
+          {/* Zeniva Ayurvedic Hospital ERP & Pharmacy Operations Banner (Super Admin Master Suite) */}
+          <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#1C1030] via-[#2A1647] to-[#1C1030] p-5 sm:p-6 text-white border border-[#482878]/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-inner">
+                <Database className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold tracking-wider uppercase font-mono">
+                    Super Admin Master Access
+                  </span>
+                  <span className="text-stone-300 text-xs flex items-center gap-1 font-mono">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Full Hospital Suite
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold font-serif text-[#F3EED9] mt-1">
+                  Hospital ERP, Pharmacy Inventory & IPD Management
+                </h3>
+                <p className="text-xs text-stone-300 max-w-xl mt-0.5 leading-relaxed">
+                  Super Admin direct governance of Classical Medicine stock, Computerized GST Invoices, Panchakarma schedules & IPD Bed occupancy.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+              <button
+                type="button"
+                onClick={() => onSelectTab('hospital_erp')}
+                className="w-full md:w-auto px-6 py-3 rounded-2xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+              >
+                <Database className="w-4 h-4 text-stone-950" />
+                <span>Open Hospital ERP Suite</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
           {/* Quick Actions Panel */}
           <div className="bg-white rounded-3xl p-6 border border-[#EBE3D5] shadow-xs space-y-4">
             <div className="flex items-center justify-between">
@@ -1892,6 +1928,20 @@ export const AdminDashboard = ({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <button
+                type="button"
+                onClick={() => onSelectTab('hospital_erp')}
+                className="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-left transition-all cursor-pointer flex items-center gap-3 group shadow-xs"
+              >
+                <div className="w-9 h-9 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-amber-950 text-xs">Hospital ERP & Pharmacy</p>
+                  <span className="text-[10px] text-amber-800">Inventory & Billing</span>
+                </div>
+              </button>
+
               <button
                 type="button"
                 onClick={() => onSelectTab('admin_doctor_verification')}

@@ -6,7 +6,7 @@ import {
   Trash2, Edit, Save, X, Bed, Sparkles, Stethoscope, 
   Layers, ChevronRight, Activity, ArrowUpRight, TrendingUp,
   Package, ShieldCheck, Check, Phone, MapPin, Receipt,
-  BadgePercent, FileSpreadsheet, Send, ArrowRight
+  BadgePercent, FileSpreadsheet, Send, ArrowRight, ArrowLeft
 } from 'lucide-react';
 import { ZenivaLogo, MortarPestleGraphic } from '../components/ZenivaIcons';
 import { getApiUrl } from '../lib/api';
@@ -495,6 +495,22 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
       <div className="bg-gradient-to-r from-[#140824] via-[#1C1030] to-[#2B1245] text-white border-b border-[#3E256C] px-4 sm:px-8 py-6 shadow-xl relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(#7c3aed15_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
 
+        {/* Navigation Breadcrumb / Back button */}
+        <div className="max-w-7xl mx-auto relative z-10 flex flex-wrap items-center justify-between gap-3 mb-4">
+          <button
+            onClick={() => onSelectTab(currentRole === 'admin' ? 'admin_dashboard' : 'home')}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-stone-200 hover:text-white text-xs font-semibold cursor-pointer transition-all active:scale-95"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to {currentRole === 'admin' ? 'Admin Dashboard' : 'Dashboard'}</span>
+          </button>
+
+          <span className="text-[11px] font-mono text-amber-300 bg-amber-400/10 border border-amber-400/30 px-3 py-1 rounded-lg flex items-center gap-1.5 shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Role: {currentRole === 'admin' ? '👑 Super Admin Master' : currentRole === 'doctor' ? '👨‍⚕️ Ayurvedic Doctor' : '👤 Zeniva Clinical Staff'}
+          </span>
+        </div>
+
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
@@ -591,11 +607,11 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
         </div>
       </div>
 
-      {/* ERP SUB-NAVIGATION TABS */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 -mt-4 relative z-20">
-        <div className="bg-white rounded-2xl p-1.5 shadow-md border border-stone-200/80 flex flex-wrap items-center gap-1">
+      {/* ERP SUB-NAVIGATION TABS (Mobile swipeable & desktop crisp) */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 -mt-4 relative z-20">
+        <div className="bg-white rounded-2xl p-1.5 shadow-md border border-stone-200/80 flex overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap items-center gap-1.5">
           {[
-            { id: 'inventory', label: '🌿 Aushadhi Bhandar (Pharmacy Stock)', badge: erpData.inventory?.length },
+            { id: 'inventory', label: '🌿 Aushadhi Bhandar (Stock)', badge: erpData.inventory?.length },
             { id: 'billing', label: '🧾 GST Billing & Invoices', badge: erpData.invoices?.length },
             { id: 'panchakarma', label: '💆‍♂️ Panchakarma Scheduler', badge: stats.activePks },
             { id: 'ipd', label: '🛏️ IPD Wards & Beds', badge: `${stats.occupiedBeds}/${stats.totalBeds}` },
@@ -604,7 +620,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
             <button
               key={tab.id}
               onClick={() => setActiveErpTab(tab.id)}
-              className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
                 activeErpTab === tab.id
                   ? 'bg-[#1C1030] text-[#F3EED9] shadow-md scale-102'
                   : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
@@ -662,8 +678,80 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
               </div>
             </div>
 
-            {/* Inventory Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-stone-200/80 overflow-hidden">
+            {/* Mobile Card List for Smartphones (Screen < 768px) */}
+            <div className="block md:hidden space-y-3">
+              {filteredInventory.map(item => {
+                const isLow = (item.stock_quantity || 0) <= (item.min_threshold || 10);
+                return (
+                  <div key={item.id} className="bg-white p-4 rounded-2xl shadow-sm border border-stone-200/80 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-stone-900 text-sm">{item.name}</h4>
+                          {isLow && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200">
+                              Low Stock
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-purple-900 font-semibold">{item.sanskrit_name || 'शास्त्रीय योग'}</p>
+                        <p className="text-[10px] text-stone-400">{item.manufacturer}</p>
+                      </div>
+
+                      <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-mono text-[11px] font-bold shrink-0">
+                        {item.form}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-stone-50 p-2.5 rounded-xl border border-stone-100">
+                      <div>
+                        <span className="text-stone-400 text-[10px] block">Batch & Expiry:</span>
+                        <span className="font-mono text-stone-800 font-medium">{item.batch_no}</span>
+                        <span className="text-stone-400 text-[10px] block">Exp: {item.expiry_date}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-stone-400 text-[10px] block">Selling Price:</span>
+                        <span className="font-mono font-bold text-stone-900 text-sm">₹{item.selling_price}</span>
+                        <span className="text-stone-400 text-[10px] block">Cost: ₹{item.cost_price}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200">
+                          {item.rack_location || 'Rack Shelf'}
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded-full font-mono font-bold text-xs ${
+                          isLow ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        }`}>
+                          {item.stock_quantity} {item.unit}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleUpdateStock(item.id, -1)}
+                          className="w-8 h-8 rounded-xl bg-stone-100 active:bg-rose-100 active:text-rose-700 text-stone-800 font-bold flex items-center justify-center cursor-pointer text-sm"
+                          title="Dispense 1 unit"
+                        >
+                          -
+                        </button>
+                        <button
+                          onClick={() => handleUpdateStock(item.id, 5)}
+                          className="px-2.5 h-8 rounded-xl bg-purple-100 active:bg-emerald-100 text-purple-900 font-bold flex items-center justify-center text-xs cursor-pointer"
+                          title="Add 5 units from stock room"
+                        >
+                          +5
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Inventory Table (Screen >= 768px) */}
+            <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-stone-200/80 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs sm:text-sm">
                   <thead>
@@ -759,15 +847,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
         {/* ============================================================== */}
         {activeErpTab === 'billing' && (
           <div className="space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-serif font-bold text-stone-900">Hospital Invoicing & Patient Billing</h3>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-stone-900">Hospital Invoicing & Patient Billing</h3>
                 <p className="text-xs text-stone-500">Computerized, GST-compliant receipts with auto inventory stock deduction.</p>
               </div>
 
               <button
                 onClick={() => setIsInvoiceModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer transition-all"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create New Patient Bill</span>
@@ -841,15 +929,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
         {/* ============================================================== */}
         {activeErpTab === 'panchakarma' && (
           <div className="space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-serif font-bold text-stone-900">Panchakarma Therapy Theaters & Suites</h3>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-stone-900">Panchakarma Therapy Theaters & Suites</h3>
                 <p className="text-xs text-stone-500">Live booking for Shirodhara, Droni massage tables, Swedana steam & Basti packages.</p>
               </div>
 
               <button
                 onClick={() => setIsBookPkModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer transition-all"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Book Panchakarma Session</span>
@@ -901,15 +989,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'doctor', onSe
         {/* ============================================================== */}
         {activeErpTab === 'ipd' && (
           <div className="space-y-4 animate-in fade-in">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-serif font-bold text-stone-900">In-Patient Department (IPD) Ward & Bed Roster</h3>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-stone-900">In-Patient Department (IPD) Ward & Bed Roster</h3>
                 <p className="text-xs text-stone-500">Live bed allocation for Ayurvedic residential detoxification & panchakarma packages.</p>
               </div>
 
               <button
                 onClick={() => setIsAdmitIpdModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center gap-2 cursor-pointer transition-all"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2B1245] text-[#F3EED9] text-xs font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 <span>Admit Patient to Bed</span>
