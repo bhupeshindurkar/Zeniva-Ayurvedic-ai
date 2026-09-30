@@ -54,7 +54,7 @@ class NumberedCanvas(canvas.Canvas):
         
         self.setFont("Helvetica", 8)
         self.setFillColor(colors.HexColor("#6B7280"))
-        self.drawString(40, 28, "Zeniva AI Healthcare Platform • AYUSH & MCIM Statutory Standards")
+        self.drawString(40, 28, "Zeniva AI Healthcare Platform • Ayurvedic Clinical Operating System")
         
         page_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(letter[0] - 40, 28, page_text)
@@ -218,7 +218,7 @@ def build_pdf(output_filename):
     meta_data = [
         [
             Paragraph("<b>Software Edition:</b> Zeniva Hospital OS v2.4", styles['TableCell']),
-            Paragraph("<b>Statutory Framework:</b> AYUSH & MCIM Standards", styles['TableCell'])
+            Paragraph("<b>Clinical Framework:</b> Ayurvedic Clinical Operating Standards", styles['TableCell'])
         ],
         [
             Paragraph("<b>Clinical Scope:</b> OPD, IPD, Pharmacy & Rogi Pariksha", styles['TableCell']),
@@ -475,7 +475,7 @@ def build_pdf(output_filename):
     ))
     story.append(Paragraph("• <b>Responsive Duality:</b> On mobile displays (width < 768px), wide clinical tables automatically transform into touch-friendly stacked cards (<code>md:hidden</code>), preventing horizontal clipping and illegible micro-text.", styles['BulletItem']))
     story.append(Paragraph("• <b>Swipeable Navigation:</b> The sub-navigation tab bar supports frictionless horizontal touch-swipe with hidden scrollbars for native app-like fluid interaction.", styles['BulletItem']))
-    story.append(Paragraph("• <b>Statutory Compliance:</b> Designed in strict alignment with Ministry of AYUSH guidelines, Maharashtra Council of Indian Medicine (MCIM) standards, and ABDM digital health records.", styles['BulletItem']))
+    story.append(Paragraph("• <b>Clinical Excellence:</b> Designed in strict alignment with authentic classical Ayurvedic methodologies and ABDM digital health records standards.", styles['BulletItem']))
     story.append(Spacer(1, 14))
 
     # Footer Signoff Box

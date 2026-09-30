@@ -799,7 +799,6 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                 Hospital Operating System · ERP v2.4
               </span>
-              <span className="text-[11px] text-stone-300 font-mono">MCIM / AYUSH Standard</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-serif font-extrabold tracking-tight flex items-center gap-3 text-[#F5EEDC]">
               <span>Zeniva Ayurvedic Hospital ERP</span>
@@ -1567,7 +1566,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <div className="space-y-2 text-xs text-stone-600">
                   <p className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>State MCIM & AYUSH Council Guidelines Adherence</span>
+                    <span>Clinical Quality & Safety Standards Adherence</span>
                   </p>
                   <p className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -2492,7 +2491,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                     </h2>
                   </div>
                   <p className="text-xs text-stone-600 mt-1 font-medium">Department of Kayachikitsa, Panchakarma & Aushadhi Shala</p>
-                  <p className="text-[11px] text-stone-500">Nagpur, Maharashtra · MCIM Reg: AYU-MAH-8921 · GSTIN: 27AABCS1429B1Z2</p>
+                  <p className="text-[11px] text-stone-500">Nagpur, Maharashtra · Reg: AYU-MAH-8921 · GSTIN: 27AABCS1429B1Z2</p>
                 </div>
 
                 <div className="text-right">
@@ -2902,7 +2901,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                   </div>
                   <div>
                     <h3 className="font-serif font-black text-stone-900 text-base">Zeniva Ayurvedic Hospital & Research</h3>
-                    <p className="text-[10px] text-stone-500">Statutory MCIM / AYUSH Certified Clinical Facility</p>
+                    <p className="text-[10px] text-stone-500">Ayurvedic Clinical Healthcare & Research Facility</p>
                   </div>
                 </div>
                 <div className="text-right text-[10px] font-mono text-stone-500">
@@ -3045,7 +3044,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                   <span>1. ERP Kya Hai? (What is Zeniva Hospital ERP?)</span>
                 </h4>
                 <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
-                  <strong>ERP (Enterprise Resource Planning)</strong> ek complete digital hospital management system hai jo kisi bhi Ayurvedic Clinic ya Hospital ke sabhi clinical, inventory aur billing kaamo ko bina kisi paper-work ke ek hi screen par jodta hai. Isme <strong>AYUSH & MCIM clinical standards</strong> ke mutabiq Rogi Pariksha, Dawa Stock, GST Bill aur Panchakarma ek click me manage hote hain.
+                  <strong>ERP (Enterprise Resource Planning)</strong> ek complete digital hospital management system hai jo kisi bhi Ayurvedic Clinic ya Hospital ke sabhi clinical, inventory aur billing kaamo ko bina kisi paper-work ke ek hi screen par jodta hai. Isme authentic Rogi Pariksha, Dawa Stock, GST Bill aur Panchakarma ek click me manage hote hain.
                 </p>
               </div>
 
