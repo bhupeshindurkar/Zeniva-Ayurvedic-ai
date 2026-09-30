@@ -63,7 +63,6 @@ export const Sidebar = ({
   // Public Nav items (Shown on Zeniva overview dashboard before patient login)
   const publicNav = [
     { id: 'home', label: 'Zeniva Overview', icon: Home },
-    { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database },
     { id: 'opportunities', label: 'Clinical Opportunities', icon: Briefcase },
     { id: 'insights', label: 'Ayurvedic AI Features', icon: Award },
     { id: 'consultation', label: 'Find Vaidyas & Clinics', icon: Stethoscope },
@@ -78,7 +77,6 @@ export const Sidebar = ({
     { id: 'profile', label: 'My Profile', icon: User, action: onOpenProfile },
     { id: 'dosha', label: 'Health Assessment', icon: Activity },
     { id: 'symptoms', label: 'Symptom Checker', icon: HeartPulse },
-    { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database },
     { id: 'opportunities', label: 'Clinical & Research Opps', icon: Briefcase },
     { id: 'consultation', label: 'Consultation', icon: Stethoscope },
     { id: 'herbs', label: 'Herbal Recommendations', icon: Sparkles },
