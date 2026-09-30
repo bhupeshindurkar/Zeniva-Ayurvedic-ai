@@ -155,7 +155,7 @@ export const fetchRemoteTeamData = async () => {
             window.dispatchEvent(new CustomEvent('zeniva_team_updated', { detail: parsed }));
             return parsed;
           }
-        } catch (parseErr) {}
+        } catch (parseErr) { }
       }
     }
 
@@ -170,7 +170,7 @@ export const fetchRemoteTeamData = async () => {
           return backendData;
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
   } catch (err) {
     console.warn('Cloud team sync notice:', err);
@@ -210,7 +210,7 @@ export const saveTeamData = async (teamData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(teamData)
       });
-    } catch (apiErr) {}
+    } catch (apiErr) { }
 
     return true;
   } catch (e) {
@@ -238,7 +238,7 @@ export const resetTeamData = async () => {
             status: 'reviewed'
           }]);
       }
-    } catch (sbErr) {}
+    } catch (sbErr) { }
 
     return DEFAULT_ZENIVA_TEAM_DATA;
   } catch (e) {

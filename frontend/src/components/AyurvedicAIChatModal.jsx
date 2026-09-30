@@ -525,54 +525,97 @@ export const AyurvedicAIChatModal = ({
       let currentWordOffset = 0;
       let usedBoundary = false;
 
+      // Exact pacing model calibrated for Indic (Marathi / Hindi) & English speech synthesis in Chrome
+      const isIndic = langToUse === 'mr' || langToUse === 'hi' || isDevanagari;
+
+      const getWordDuration = (word) => {
+        if (!word) return isIndic ? 680 : 420;
+        const clean = word.replace(/[^\p{L}\p{N}]/gu, '');
+        const len = clean.length || word.length || 3;
+        const hasComma = /[,;—\-]/.test(word);
+        const hasEndPunctuation = /[.!?॥।]$/.test(word);
+
+        let durationMs;
+        if (isIndic) {
+          // Indic conjuncts and matras take ~680-720ms/word at rate 0.95 in Chrome
+          durationMs = 380 + Math.min(len, 12) * 50;
+          if (hasComma) durationMs += 220;
+          if (hasEndPunctuation) durationMs += 350;
+        } else {
+          // English words average ~420ms/word at rate 1.0 in Chrome
+          durationMs = 260 + Math.min(len, 12) * 35;
+          if (hasComma) durationMs += 180;
+          if (hasEndPunctuation) durationMs += 280;
+        }
+        return Math.max(300, durationMs);
+      };
+
       // Real-time word progression starts ONLY when voice actually produces audio
       utterance.onstart = () => {
         if (currentSession !== speechSessionIdRef.current || !isSpeechActiveRef.current) return;
         setActiveWordIndex(startWordIndex);
         currentWordOffset = 0;
 
-        clearInterval(wordTimerRef.current);
-        const wordInterval = langToUse === 'en' ? 260 : 330;
+        if (wordTimerRef.current) {
+          clearTimeout(wordTimerRef.current);
+          clearInterval(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
 
-        wordTimerRef.current = setInterval(() => {
+        const stepWord = () => {
           if (currentSession !== speechSessionIdRef.current || !isSpeechActiveRef.current || usedBoundary) {
-            clearInterval(wordTimerRef.current);
             return;
           }
           currentWordOffset++;
           if (currentWordOffset < chunkWords.length) {
             setActiveWordIndex(startWordIndex + currentWordOffset);
-          } else {
-            clearInterval(wordTimerRef.current);
+            const nextWord = chunkWords[currentWordOffset];
+            const nextDelay = getWordDuration(nextWord);
+            wordTimerRef.current = setTimeout(stepWord, nextDelay);
           }
-        }, wordInterval);
+        };
+
+        const initialDelay = getWordDuration(chunkWords[0]);
+        wordTimerRef.current = setTimeout(stepWord, initialDelay);
       };
 
       // Native browser word boundary event (takes immediate priority over timer if supported)
       utterance.onboundary = (e) => {
-        if (e.name === 'word' && currentSession === speechSessionIdRef.current && isSpeechActiveRef.current) {
-          if (!usedBoundary) {
+        if (currentSession === speechSessionIdRef.current && isSpeechActiveRef.current) {
+          if (e.charIndex !== undefined && e.charIndex >= 0) {
             usedBoundary = true;
-            clearInterval(wordTimerRef.current);
-          }
-          const textBefore = chunk.substring(0, e.charIndex);
-          const wordIdx = (textBefore.match(/\S+/g) || []).length;
-          if (wordIdx < chunkWords.length) {
-            currentWordOffset = wordIdx;
-            setActiveWordIndex(startWordIndex + wordIdx);
+            if (wordTimerRef.current) {
+              clearTimeout(wordTimerRef.current);
+              clearInterval(wordTimerRef.current);
+              wordTimerRef.current = null;
+            }
+            const textBefore = chunk.substring(0, e.charIndex);
+            const wordIdx = (textBefore.match(/\S+/g) || []).length;
+            if (wordIdx < chunkWords.length) {
+              currentWordOffset = wordIdx;
+              setActiveWordIndex(startWordIndex + wordIdx);
+            }
           }
         }
       };
 
       utterance.onend = () => {
-        clearInterval(wordTimerRef.current);
+        if (wordTimerRef.current) {
+          clearTimeout(wordTimerRef.current);
+          clearInterval(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
         if (currentSession === speechSessionIdRef.current && isSpeechActiveRef.current) {
-          speechNextChunkTimerRef.current = setTimeout(playNextChunk, 100);
+          speechNextChunkTimerRef.current = setTimeout(playNextChunk, 120);
         }
       };
 
       utterance.onerror = (e) => {
-        clearInterval(wordTimerRef.current);
+        if (wordTimerRef.current) {
+          clearTimeout(wordTimerRef.current);
+          clearInterval(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
         if (currentSession === speechSessionIdRef.current && isSpeechActiveRef.current) {
           speechNextChunkTimerRef.current = setTimeout(playNextChunk, 80);
         }
@@ -581,11 +624,15 @@ export const AyurvedicAIChatModal = ({
       activeUtteranceRef.current = utterance;
 
       // Generous safety timer only for frozen audio (never premature)
-      const expectedDurationMs = Math.max(15000, chunkWords.length * 800);
+      const expectedDurationMs = Math.max(18000, chunkWords.length * 1200);
       if (speechWatchdogRef.current) clearTimeout(speechWatchdogRef.current);
       speechWatchdogRef.current = setTimeout(() => {
         if (currentSession === speechSessionIdRef.current && isSpeechActiveRef.current) {
-          clearInterval(wordTimerRef.current);
+          if (wordTimerRef.current) {
+            clearTimeout(wordTimerRef.current);
+            clearInterval(wordTimerRef.current);
+            wordTimerRef.current = null;
+          }
           playNextChunk();
         }
       }, expectedDurationMs);
@@ -608,7 +655,11 @@ export const AyurvedicAIChatModal = ({
     speechQueueRef.current = [];
     speechIndexRef.current = 0;
     activeUtteranceRef.current = null;
-    clearInterval(wordTimerRef.current);
+    if (wordTimerRef.current) {
+      clearTimeout(wordTimerRef.current);
+      clearInterval(wordTimerRef.current);
+      wordTimerRef.current = null;
+    }
 
     if (speechKeepAliveRef.current) {
       clearInterval(speechKeepAliveRef.current);
