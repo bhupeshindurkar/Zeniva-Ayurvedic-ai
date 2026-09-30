@@ -521,6 +521,7 @@ export const AyurvedicAIChatModal = ({
       utterance.pitch = 1.05;
 
       let currentWordOffset = 0;
+      let usedBoundary = false;
 
       // Real-time word progression starts ONLY when voice actually produces audio
       utterance.onstart = () => {
@@ -532,7 +533,7 @@ export const AyurvedicAIChatModal = ({
         const wordInterval = langToUse === 'en' ? 260 : 330;
 
         wordTimerRef.current = setInterval(() => {
-          if (currentSession !== speechSessionIdRef.current || !isSpeechActiveRef.current) {
+          if (currentSession !== speechSessionIdRef.current || !isSpeechActiveRef.current || usedBoundary) {
             clearInterval(wordTimerRef.current);
             return;
           }
@@ -545,9 +546,13 @@ export const AyurvedicAIChatModal = ({
         }, wordInterval);
       };
 
-      // Native browser word boundary event
+      // Native browser word boundary event (takes immediate priority over timer if supported)
       utterance.onboundary = (e) => {
         if (e.name === 'word' && currentSession === speechSessionIdRef.current && isSpeechActiveRef.current) {
+          if (!usedBoundary) {
+            usedBoundary = true;
+            clearInterval(wordTimerRef.current);
+          }
           const textBefore = chunk.substring(0, e.charIndex);
           const wordIdx = (textBefore.match(/\S+/g) || []).length;
           if (wordIdx < chunkWords.length) {
