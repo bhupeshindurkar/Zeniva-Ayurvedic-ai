@@ -32,20 +32,75 @@ export const sanitizeAyurvedicJargon = (str) => {
 };
 
 // Utility to render markdown cleanly without raw symbols like **, ##, ###, ---
-// With real-time synchronized Voice Karaoke Highlighting for active speaking line
+// Utility to render markdown cleanly without raw symbols like **, ##, ###, ---
+// With real-time professional inline sentence-by-sentence Voice Highlighting (like text readers / karaoke)
 const renderCleanFormattedText = (rawText, isThisSpeaking = false, speakingChunkText = '') => {
   if (!rawText) return null;
   const sanitizedText = sanitizeAyurvedicJargon(rawText);
 
-  // Helper to check if this line is currently being spoken
-  const isLineActiveSpeaking = (lineText) => {
-    if (!isThisSpeaking || !speakingChunkText || !lineText) return false;
-    const cleanL = lineText.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
-    const cleanS = speakingChunkText.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
-    if (!cleanL || !cleanS) return false;
-    return cleanL.includes(cleanS) || cleanS.includes(cleanL) ||
-      (cleanS.length >= 8 && cleanL.includes(cleanS.substring(0, 10))) ||
-      (cleanL.length >= 8 && cleanS.includes(cleanL.substring(0, 10)));
+  // Helper to parse **bold** inside text
+  const parseBold = (str) => {
+    if (!str) return '';
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = boldRegex.exec(str)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(str.substring(lastIndex, match.index));
+      }
+      parts.push(
+        <strong key={match.index} className="font-bold text-stone-950">
+          {match[1]}
+        </strong>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < str.length) {
+      parts.push(str.substring(lastIndex));
+    }
+    return parts.length > 0 ? parts : str;
+  };
+
+  // Helper to render sentence-by-sentence with exact inline golden highlight
+  const renderSentenceWithHighlight = (text) => {
+    if (!text) return null;
+
+    if (!isThisSpeaking || !speakingChunkText) {
+      return parseBold(text);
+    }
+
+    const spkClean = speakingChunkText.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+    // Split into individual sentences keeping punctuation
+    const sentences = text.match(/[^.!?।\n]+[.!?।\n]?\s*/g) || [text];
+
+    return (
+      <>
+        {sentences.map((sent, sIdx) => {
+          const sClean = sent.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+          const isMatch = sClean && spkClean && (
+            sClean.includes(spkClean) || 
+            spkClean.includes(sClean) ||
+            (spkClean.length >= 8 && sClean.includes(spkClean.substring(0, 10))) ||
+            (sClean.length >= 8 && spkClean.includes(sClean.substring(0, 10)))
+          );
+
+          if (isMatch) {
+            return (
+              <span
+                key={sIdx}
+                className="bg-amber-400 text-stone-950 font-bold px-1.5 py-0.5 rounded-md shadow-xs border border-amber-500/50 inline mx-0.5 transition-all duration-200"
+              >
+                {parseBold(sent)}
+              </span>
+            );
+          }
+
+          return <span key={sIdx}>{parseBold(sent)}</span>;
+        })}
+      </>
+    );
   };
 
   const lines = sanitizedText.split('\n');
@@ -76,110 +131,30 @@ const renderCleanFormattedText = (rawText, isThisSpeaking = false, speakingChunk
           cleanLine = cleanLine.replace(/^[-*•]\s+/, '').trim();
         }
 
-        // Parse **bold text** into <strong> elements
-        const parts = [];
-        const boldRegex = /\*\*(.*?)\*\*/g;
-        let lastIndex = 0;
-        let match;
-
-        while ((match = boldRegex.exec(cleanLine)) !== null) {
-          if (match.index > lastIndex) {
-            parts.push(cleanLine.substring(lastIndex, match.index));
-          }
-          parts.push(
-            <strong key={match.index} className="font-bold text-stone-950">
-              {match[1]}
-            </strong>
-          );
-          lastIndex = match.index + match[0].length;
-        }
-        if (lastIndex < cleanLine.length) {
-          parts.push(cleanLine.substring(lastIndex));
-        }
-
-        const isCurrentSpeakingLine = isLineActiveSpeaking(cleanLine);
-
         if (isHeader) {
           return (
-            <div 
-              key={idx} 
-              className={`pt-2 pb-1 text-[13px] sm:text-[14px] font-bold flex items-center gap-2 transition-all duration-300 ${
-                isCurrentSpeakingLine 
-                  ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-purple-50 p-2.5 rounded-xl border-l-4 border-amber-500 shadow-xs text-purple-950 scale-[1.01]' 
-                  : 'text-[#3B1E6D]'
-              }`}
-            >
-              {isCurrentSpeakingLine ? (
-                <span className="flex items-end gap-0.5 h-3.5 shrink-0">
-                  <span className="w-1 h-2.5 bg-amber-600 animate-pulse rounded-full"></span>
-                  <span className="w-1 h-3.5 bg-purple-700 animate-bounce rounded-full"></span>
-                  <span className="w-1 h-1.5 bg-amber-600 animate-pulse rounded-full"></span>
-                </span>
-              ) : (
-                <span className="w-1.5 h-3.5 rounded-full bg-amber-500 inline-block shrink-0 shadow-xs"></span>
-              )}
-              <span>{parts.length > 0 ? parts : cleanLine}</span>
+            <div key={idx} className="pt-2 pb-0.5 text-[13px] sm:text-[14px] font-bold text-[#3B1E6D] flex items-center gap-2">
+              <span className="w-1.5 h-3.5 rounded-full bg-amber-500 inline-block shrink-0 shadow-xs"></span>
+              <span>{renderSentenceWithHighlight(cleanLine)}</span>
             </div>
           );
         }
 
         if (isBullet) {
           return (
-            <div 
-              key={idx} 
-              className={`flex items-start gap-2.5 pl-2.5 py-1.5 rounded-xl transition-all duration-300 ${
-                isCurrentSpeakingLine
-                  ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-purple-50/70 border-l-4 border-amber-500 shadow-sm scale-[1.01]'
-                  : 'hover:bg-stone-50/60'
-              }`}
-            >
-              {isCurrentSpeakingLine ? (
-                <span className="flex items-end gap-0.5 h-3.5 mt-0.5 shrink-0">
-                  <span className="w-1 h-2.5 bg-amber-600 animate-pulse rounded-full"></span>
-                  <span className="w-1 h-3.5 bg-purple-700 animate-bounce rounded-full"></span>
-                  <span className="w-1 h-1.5 bg-amber-600 animate-pulse rounded-full"></span>
-                </span>
-              ) : (
-                <span className="text-amber-600 font-bold mt-0.5 text-xs select-none">•</span>
-              )}
-              <div className="flex-1">
-                {isCurrentSpeakingLine && (
-                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-800 uppercase tracking-wider mb-0.5 bg-amber-200/70 px-1.5 py-0.5 rounded shadow-2xs">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
-                    <span>चालू ओळ (Speaking Now)</span>
-                  </span>
-                )}
-                <span className={`block ${isCurrentSpeakingLine ? 'text-stone-950 font-bold' : 'text-stone-700'}`}>
-                  {parts.length > 0 ? parts : cleanLine}
-                </span>
-              </div>
+            <div key={idx} className="flex items-start gap-2 pl-2">
+              <span className="text-amber-600 font-bold mt-0.5 text-xs select-none">•</span>
+              <span className="flex-1 text-stone-700 leading-relaxed">
+                {renderSentenceWithHighlight(cleanLine)}
+              </span>
             </div>
           );
         }
 
         return (
-          <div
-            key={idx}
-            className={`p-2 rounded-xl transition-all duration-300 ${
-              isCurrentSpeakingLine
-                ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-purple-50/70 border-l-4 border-amber-500 shadow-sm scale-[1.01]'
-                : ''
-            }`}
-          >
-            {isCurrentSpeakingLine && (
-              <div className="flex items-center gap-1.5 text-amber-800 text-[10px] font-bold mb-1">
-                <span className="flex items-end gap-0.5 h-3 shrink-0">
-                  <span className="w-1 h-2.5 bg-amber-600 animate-pulse rounded-full"></span>
-                  <span className="w-1 h-3.5 bg-purple-700 animate-bounce rounded-full"></span>
-                  <span className="w-1 h-1.5 bg-amber-600 animate-pulse rounded-full"></span>
-                </span>
-                <span className="uppercase tracking-wider">चालू ओळ (Speaking Now)</span>
-              </div>
-            )}
-            <p className={isCurrentSpeakingLine ? 'text-stone-950 font-bold leading-relaxed' : 'text-stone-700 leading-relaxed'}>
-              {parts.length > 0 ? parts : cleanLine}
-            </p>
-          </div>
+          <p key={idx} className="text-stone-700 leading-relaxed">
+            {renderSentenceWithHighlight(cleanLine)}
+          </p>
         );
       })}
     </div>
