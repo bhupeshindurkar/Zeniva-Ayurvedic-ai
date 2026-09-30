@@ -558,18 +558,6 @@ export const PatientDashboard = ({
                   <span className="truncate max-w-[160px] text-stone-100">{currentUser.location || userLocationText}</span>
                   <span className="text-[10px] text-amber-300 font-bold">Edit</span>
                 </div>
-
-                {/* Subtle Small Project PPT Button (Mobile Friendly & Non-intrusive) */}
-                <a
-                  href="/zeniva_presentation.pptx"
-                  download="Zeniva_AI_Presentation.pptx"
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/20 text-[11px] font-semibold text-stone-200 hover:text-white shadow-sm backdrop-blur-md transition-all cursor-pointer group active:scale-95"
-                  title="Download Zeniva AI Project Presentation (PPTX)"
-                >
-                  <FileText className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
-                  <span>Project PPT</span>
-                  <Download className="w-3 h-3 text-stone-400 group-hover:text-white transition-colors" />
-                </a>
               </div>
             </div>
 

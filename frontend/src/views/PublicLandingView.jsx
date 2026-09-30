@@ -137,18 +137,6 @@ export const PublicLandingView = ({
                 <Stethoscope className="w-3.5 h-3.5 text-amber-300" />
                 <span>Doctor Portal</span>
               </button>
-
-              {/* Subtle Small Project PPT Button (Mobile Friendly & Non-intrusive) */}
-              <a
-                href="/zeniva_presentation.pptx"
-                download="Zeniva_AI_Presentation.pptx"
-                className="px-3.5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white font-medium text-xs transition-colors cursor-pointer border border-white/20 flex items-center gap-1.5 shadow-xs shrink-0 active:scale-95"
-                title="Download Zeniva AI Presentation (PPTX)"
-              >
-                <FileText className="w-3.5 h-3.5 text-amber-300" />
-                <span>Project PPT</span>
-                <Download className="w-3 h-3 text-stone-400" />
-              </a>
             </div>
 
             {/* Trust Badges */}

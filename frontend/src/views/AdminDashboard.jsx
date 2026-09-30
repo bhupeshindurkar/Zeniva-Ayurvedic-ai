@@ -1834,6 +1834,18 @@ export const AdminDashboard = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Confidential Admin Project PPT Download */}
+            <a
+              href="/zeniva_presentation.pptx"
+              download="Zeniva_AI_Presentation_Admin.pptx"
+              className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all active:scale-95"
+              title="Download Confidential Zeniva AI Project Presentation (PPTX)"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-600" />
+              <span>Project PPT (Admin)</span>
+              <Download className="w-3 h-3 text-amber-700" />
+            </a>
+
             <button
               type="button"
               onClick={fetchAllRealData}
@@ -2030,6 +2042,27 @@ export const AdminDashboard = ({
                   <span className="text-[10px] text-emerald-700">Full clinical ledger</span>
                 </div>
               </button>
+
+              <a
+                href="/zeniva_presentation.pptx"
+                download="Zeniva_AI_Presentation_Admin.pptx"
+                className="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100/90 border border-amber-300 text-left transition-all cursor-pointer flex items-center gap-3 group shadow-xs active:scale-95"
+                title="Download Confidential Zeniva AI Project Presentation (PPTX)"
+              >
+                <div className="w-9 h-9 rounded-xl bg-amber-300 text-amber-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                  <FileText className="w-4 h-4 text-amber-900" />
+                </div>
+                <div>
+                  <p className="font-bold text-amber-950 text-xs flex items-center gap-1.5">
+                    <span>Project Presentation</span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-amber-200 text-amber-900 text-[9px] font-bold">PPTX</span>
+                  </p>
+                  <span className="text-[10px] text-amber-800 flex items-center gap-1">
+                    <span>Download Confidential File</span>
+                    <Download className="w-2.5 h-2.5" />
+                  </span>
+                </div>
+              </a>
 
               <button
                 type="button"
