@@ -32,9 +32,21 @@ export const sanitizeAyurvedicJargon = (str) => {
 };
 
 // Utility to render markdown cleanly without raw symbols like **, ##, ###, ---
-const renderCleanFormattedText = (rawText) => {
+// With real-time synchronized Voice Karaoke Highlighting for active speaking line
+const renderCleanFormattedText = (rawText, isThisSpeaking = false, speakingChunkText = '') => {
   if (!rawText) return null;
   const sanitizedText = sanitizeAyurvedicJargon(rawText);
+
+  // Helper to check if this line is currently being spoken
+  const isLineActiveSpeaking = (lineText) => {
+    if (!isThisSpeaking || !speakingChunkText || !lineText) return false;
+    const cleanL = lineText.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+    const cleanS = speakingChunkText.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
+    if (!cleanL || !cleanS) return false;
+    return cleanL.includes(cleanS) || cleanS.includes(cleanL) ||
+      (cleanS.length >= 8 && cleanL.includes(cleanS.substring(0, 10))) ||
+      (cleanL.length >= 8 && cleanS.includes(cleanL.substring(0, 10)));
+  };
 
   const lines = sanitizedText.split('\n');
   return (
@@ -85,10 +97,27 @@ const renderCleanFormattedText = (rawText) => {
           parts.push(cleanLine.substring(lastIndex));
         }
 
+        const isCurrentSpeakingLine = isLineActiveSpeaking(cleanLine);
+
         if (isHeader) {
           return (
-            <div key={idx} className="pt-2 pb-0.5 text-[13px] sm:text-[14px] font-bold text-[#3B1E6D] flex items-center gap-2">
-              <span className="w-1.5 h-3.5 rounded-full bg-amber-500 inline-block shrink-0 shadow-xs"></span>
+            <div 
+              key={idx} 
+              className={`pt-2 pb-1 text-[13px] sm:text-[14px] font-bold flex items-center gap-2 transition-all duration-300 ${
+                isCurrentSpeakingLine 
+                  ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-purple-50 p-2.5 rounded-xl border-l-4 border-amber-500 shadow-xs text-purple-950 scale-[1.01]' 
+                  : 'text-[#3B1E6D]'
+              }`}
+            >
+              {isCurrentSpeakingLine ? (
+                <span className="flex items-end gap-0.5 h-3.5 shrink-0">
+                  <span className="w-1 h-2.5 bg-amber-600 animate-pulse rounded-full"></span>
+                  <span className="w-1 h-3.5 bg-purple-700 animate-bounce rounded-full"></span>
+                  <span className="w-1 h-1.5 bg-amber-600 animate-pulse rounded-full"></span>
+                </span>
+              ) : (
+                <span className="w-1.5 h-3.5 rounded-full bg-amber-500 inline-block shrink-0 shadow-xs"></span>
+              )}
               <span>{parts.length > 0 ? parts : cleanLine}</span>
             </div>
           );
@@ -96,17 +125,61 @@ const renderCleanFormattedText = (rawText) => {
 
         if (isBullet) {
           return (
-            <div key={idx} className="flex items-start gap-2 pl-2">
-              <span className="text-amber-600 font-bold mt-0.5 text-xs select-none">•</span>
-              <span className="flex-1 text-stone-700">{parts.length > 0 ? parts : cleanLine}</span>
+            <div 
+              key={idx} 
+              className={`flex items-start gap-2.5 pl-2.5 py-1.5 rounded-xl transition-all duration-300 ${
+                isCurrentSpeakingLine
+                  ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-purple-50/70 border-l-4 border-amber-500 shadow-sm scale-[1.01]'
+                  : 'hover:bg-stone-50/60'
+              }`}
+            >
+              {isCurrentSpeakingLine ? (
+                <span className="flex items-end gap-0.5 h-3.5 mt-0.5 shrink-0">
+                  <span className="w-1 h-2.5 bg-amber-600 animate-pulse rounded-full"></span>
+                  <span className="w-1 h-3.5 bg-purple-700 animate-bounce rounded-full"></span>
+                  <span className="w-1 h-1.5 bg-amber-600 animate-pulse rounded-full"></span>
+                </span>
+              ) : (
+                <span className="text-amber-600 font-bold mt-0.5 text-xs select-none">•</span>
+              )}
+              <div className="flex-1">
+                {isCurrentSpeakingLine && (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold text-amber-800 uppercase tracking-wider mb-0.5 bg-amber-200/70 px-1.5 py-0.5 rounded shadow-2xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
+                    <span>चालू ओळ (Speaking Now)</span>
+                  </span>
+                )}
+                <span className={`block ${isCurrentSpeakingLine ? 'text-stone-950 font-bold' : 'text-stone-700'}`}>
+                  {parts.length > 0 ? parts : cleanLine}
+                </span>
+              </div>
             </div>
           );
         }
 
         return (
-          <p key={idx} className="text-stone-700 leading-relaxed">
-            {parts.length > 0 ? parts : cleanLine}
-          </p>
+          <div
+            key={idx}
+            className={`p-2 rounded-xl transition-all duration-300 ${
+              isCurrentSpeakingLine
+                ? 'bg-gradient-to-r from-amber-100 via-amber-50 to-purple-50/70 border-l-4 border-amber-500 shadow-sm scale-[1.01]'
+                : ''
+            }`}
+          >
+            {isCurrentSpeakingLine && (
+              <div className="flex items-center gap-1.5 text-amber-800 text-[10px] font-bold mb-1">
+                <span className="flex items-end gap-0.5 h-3 shrink-0">
+                  <span className="w-1 h-2.5 bg-amber-600 animate-pulse rounded-full"></span>
+                  <span className="w-1 h-3.5 bg-purple-700 animate-bounce rounded-full"></span>
+                  <span className="w-1 h-1.5 bg-amber-600 animate-pulse rounded-full"></span>
+                </span>
+                <span className="uppercase tracking-wider">चालू ओळ (Speaking Now)</span>
+              </div>
+            )}
+            <p className={isCurrentSpeakingLine ? 'text-stone-950 font-bold leading-relaxed' : 'text-stone-700 leading-relaxed'}>
+              {parts.length > 0 ? parts : cleanLine}
+            </p>
+          </div>
         );
       })}
     </div>
@@ -155,14 +228,14 @@ export const AyurvedicAIChatModal = ({
 
   const welcomeTemplates = {
     mr: isGuest 
-      ? `नमस्ते! मी झेनिव्हा (Zeniva) — तुमची AI डॅशबोर्ड व आयुर्वेदिक मार्गदर्शक! 🌿 मी झेनिव्हा प्लॅटफॉर्मची वैशिष्ट्ये, निर्माते व टीम (TGPCET नागपूर) आणि आयुर्वेदिक ज्ञानाबद्दल माहिती देऊ शकते. आजाराच्या संपूर्ण वैयक्तिक उपचारासाठी कृपया पेशंट खात्यात लॉगिन करा. मला काहीही विचारा किंवा बोला!`
-      : `नमस्ते ${patientName}! मी झेनिव्हा (Zeniva) — तुमची वैयक्तिक AI आयुर्वेदिक डॉक्टर सहाय्यक! 🌿 तुमच्या प्रकृतीनुसार आणि चरक संहितेच्या आधारे मी तुमच्या सेवेत आहे. आज तुम्हाला कशाबद्दल सल्ला हवा आहे? मला विचारा किंवा बोला!`,
+      ? `नमस्ते! मी झेनिवा (Zeniva) — तुमची AI डॅशबोर्ड व आयुर्वेदिक मार्गदर्शक! 🌿\n\n• मी झेनिवा प्लॅटफॉर्मची वैशिष्ट्ये, निर्माते व टीम (TGPCET नागपूर) आणि आयुर्वेदिक ज्ञानाबद्दल माहिती देऊ शकते.\n• आजाराच्या संपूर्ण वैयक्तिक उपचारासाठी कृपया पेशंट खात्यात लॉगिन करा.\n• मला काहीही विचारा किंवा बोला!`
+      : `नमस्ते ${patientName}! मी झेनिवा (Zeniva) — तुमची वैयक्तिक AI आयुर्वेदिक डॉक्टर सहाय्यक! 🌿\n\n• तुमच्या प्रकृतीनुसार आणि चरक संहितेच्या आधारे मी तुमच्या सेवेत आहे.\n• आज तुम्हाला कशाबद्दल सल्ला हवा आहे? मला विचारा किंवा बोला!`,
     hi: isGuest
-      ? `नमस्ते! मैं ज़ेनिवा (Zeniva) हूँ — आपकी AI डैशबोर्ड और आयुर्वेदिक गाइड! 🌿 मैं ज़ेनिवा प्लॅटफॉर्म के फीचर्स, टीम व फाउंडर्स (TGPCET नागपुर) और वैदिक ज्ञान के बारे में जानकारी दे सकती हूँ। किसी बीमारी के पूरे व्यक्तिगत इलाज के लिए कृपया पेशेंट अकाउंट में लॉगिन करें। बोलें या टाइप करें!`
-      : `नमस्ते ${patientName} जी! मैं ज़ेनिवा (Zeniva) हूँ — आपकी AI आयुर्वेदिक डॉक्टर साथी! 🌿 आपकी प्रकृती और चरक संहिता के आधार पर मैं आपकी सहायता के लिए तैयार हूँ। आज आपको क्या परामर्श चाहिए? बोलें या टाइप करें!`,
+      ? `नमस्ते! मैं ज़ेनिवा (Zeniva) हूँ — आपकी AI डैशबोर्ड और आयुर्वेदिक गाइड! 🌿\n\n• मैं ज़ेनिवा प्लॅटफॉर्म के फीचर्स, टीम व फाउंडर्स (TGPCET नागपुर) और वैदिक ज्ञान के बारे में जानकारी दे सकती हूँ।\n• किसी बीमारी के पूरे व्यक्तिगत इलाज के लिए कृपया पेशेंट अकाउंट में लॉगिन करें।\n• बोलें या टाइप करें!`
+      : `नमस्ते ${patientName} जी! मैं ज़ेनिवा (Zeniva) हूँ — आपकी AI आयुर्वेदिक डॉक्टर साथी! 🌿\n\n• आपकी प्रकृती और चरक संहिता के आधार पर मैं आपकी सहायता के लिए तैयार हूँ।\n• आज आपको क्या परामर्श चाहिए? बोलें या टाइप करें!`,
     en: isGuest
-      ? `Welcome to Zeniva AI! 🌿 I am your AI Companion and Platform Guide. I can guide you through our dashboard features, introduce the Zeniva Creators & Team (TGPCET Nagpur), or share Ayurvedic wisdom. For personalized clinical diagnosis and prescriptions, please log in to your Patient Account!`
-      : `Hello ${patientName}! 🌿 I am Zeniva — your personal AI Ayurvedic Doctor Companion. Based on your health profile and authentic Ayurvedic scriptures, how can I assist your health and wellness today?`
+      ? `Welcome to Zeniva AI! 🌿 I am your AI Companion and Platform Guide.\n\n• I can guide you through our dashboard features, introduce the Zeniva Creators & Team (TGPCET Nagpur), or share Ayurvedic wisdom.\n• For personalized clinical diagnosis and prescriptions, please log in to your Patient Account!\n• Ask or speak anything to me!`
+      : `Hello ${patientName}! 🌿 I am Zeniva — your personal AI Ayurvedic Doctor Companion.\n\n• Based on your health profile and authentic Ayurvedic scriptures, how can I assist your health and wellness today?\n• Feel free to ask or speak!`
   };
 
   const [selectedLang, setSelectedLang] = useState('mr');
@@ -184,6 +257,7 @@ export const AyurvedicAIChatModal = ({
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakingMsgId, setSpeakingMsgId] = useState(null);
+  const [speakingChunkText, setSpeakingChunkText] = useState('');
   const [copiedMsgId, setCopiedMsgId] = useState(null);
 
   const messagesEndRef = useRef(null);
@@ -468,11 +542,13 @@ export const AyurvedicAIChatModal = ({
       if (speechIndexRef.current >= speechQueueRef.current.length) {
         setIsSpeaking(false);
         setSpeakingMsgId(null);
+        setSpeakingChunkText('');
         isSpeechActiveRef.current = false;
         return;
       }
 
       const chunk = speechQueueRef.current[speechIndexRef.current++];
+      setSpeakingChunkText(chunk);
       const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.lang = utteranceLang;
       if (bestVoice) utterance.voice = bestVoice;
@@ -545,6 +621,7 @@ export const AyurvedicAIChatModal = ({
 
     setIsSpeaking(false);
     setSpeakingMsgId(null);
+    setSpeakingChunkText('');
   };
 
   const toggleSpeechRecognition = () => {
@@ -1519,7 +1596,34 @@ CRITICAL MANDATORY RULES:
                         {msg.text}
                       </div>
                     ) : (
-                      renderCleanFormattedText(msg.text)
+                      <>
+                        {isThisSpeaking && (
+                          <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#1C1030] to-[#3B1E6D] text-amber-200 text-[11px] font-medium shadow-sm mb-2.5 border border-amber-400/40 animate-in fade-in">
+                            <div className="flex items-center gap-2 overflow-hidden mr-2">
+                              <span className="flex items-end gap-0.5 h-3 shrink-0">
+                                <span className="w-1 h-2 bg-amber-400 animate-pulse rounded-full"></span>
+                                <span className="w-1 h-3.5 bg-purple-300 animate-bounce rounded-full"></span>
+                                <span className="w-1 h-2 bg-amber-400 animate-pulse rounded-full"></span>
+                              </span>
+                              <span className="font-bold text-amber-300 shrink-0 text-[10px]">
+                                {selectedLang === 'mr' ? 'आवाज चालू आहे (Speaking):' : selectedLang === 'hi' ? 'आवाज़ शुरू है (Speaking):' : 'Speaking Now:'}
+                              </span>
+                              <span className="truncate italic text-stone-200 text-[11px]">
+                                "{speakingChunkText || '...'}"
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={stopSpeaking}
+                              className="px-2 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-stone-200 hover:text-white text-[10px] font-bold shrink-0 cursor-pointer transition-colors"
+                              title="Stop Voice"
+                            >
+                              {selectedLang === 'mr' ? 'थांबवा' : selectedLang === 'hi' ? 'रोकें' : 'Stop'}
+                            </button>
+                          </div>
+                        )}
+                        {renderCleanFormattedText(msg.text, isThisSpeaking, speakingChunkText)}
+                      </>
                     )}
 
                     {msg.citations && (
