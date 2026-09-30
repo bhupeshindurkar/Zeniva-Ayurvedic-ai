@@ -6,7 +6,8 @@ import {
   Trash2, Edit, Save, X, Bed, Sparkles, Stethoscope, 
   Layers, ChevronRight, Activity, ArrowUpRight, TrendingUp,
   Package, ShieldCheck, Check, Phone, MapPin, Receipt,
-  BadgePercent, FileSpreadsheet, Send, ArrowRight, ArrowLeft, Lock
+  BadgePercent, FileSpreadsheet, Send, ArrowRight, ArrowLeft, Lock,
+  Flame, Droplet, Wind, HeartPulse, UserCheck, Pill
 } from 'lucide-react';
 import { ZenivaLogo, MortarPestleGraphic } from '../components/ZenivaIcons';
 import { getApiUrl } from '../lib/api';
@@ -85,6 +86,104 @@ const DEFAULT_ERP_DATA = {
     { id: "bed_4", bed_number: "Bed 202", ward_type: "Panchakarma Care Suite", patient_name: null, patient_phone: null, admission_date: null, discharge_date: null, prakriti: null, assigned_doctor: "Dr. Sohil Indurkar", diet_instructions: "Standard Sattvic Agni diet", is_occupied: 0, daily_rate: 2200 },
     { id: "bed_5", bed_number: "Bed 301", ward_type: "General Care Ward", patient_name: null, patient_phone: null, admission_date: null, discharge_date: null, prakriti: null, assigned_doctor: "Dr. Sohil Indurkar", diet_instructions: "Warm Kitchari & cumin water", is_occupied: 0, daily_rate: 1200 },
     { id: "bed_6", bed_number: "Bed 302", ward_type: "General Care Ward", patient_name: null, patient_phone: null, admission_date: null, discharge_date: null, prakriti: null, assigned_doctor: "Dr. Sohil Indurkar", diet_instructions: "Warm Kitchari & cumin water", is_occupied: 0, daily_rate: 1200 }
+  ],
+  daily_body_issues: [
+    {
+      id: "dbi_1",
+      patient_name: "Kamlesh Indurkar",
+      patient_phone: "+91 9011942126",
+      patient_age: 52,
+      gender: "Male",
+      body_system: "Spine & Joint Health (अस्थि-संधि)",
+      chief_complaint: "Morning stiffness, lumbar backache & knee crunching during walking (संधिशूल व कटिशूल)",
+      dosha_imbalance: "Vata-Kapha",
+      agni_status: "Vishamagni (Irregular)",
+      severity: "Moderate",
+      symptoms_duration: "12 Days",
+      nadi_pulse: "76 bpm · Mandagati (Sluggish Vata)",
+      jihva_tongue: "Slight white coating at root (Samata)",
+      sleep_hours: "6 hrs (Interrupted)",
+      bowel_habit: "Hard stools every 2nd day",
+      daily_care_given: "Sthanika Janu Basti with warm Mahanarayana Taila (45 min) + Yogaraj Guggulu (2 tabs BD)",
+      diet_instructions: "Warm freshly cooked mung dal with cow ghee, warm ginger water; avoid raw salads, dry chana, cold drinks",
+      lifestyle_advice: "Light Sukshma Vyayama, avoid cold wind draft, 15 min hot water fomentation at bedtime",
+      followup_date: "2026-10-05",
+      status: "In-Progress",
+      logged_by: "Dr. Sohil Indurkar",
+      created_at: new Date(Date.now() - 86400000).toISOString()
+    },
+    {
+      id: "dbi_2",
+      patient_name: "Sunita Deshmukh",
+      patient_phone: "+91 9423112233",
+      patient_age: 46,
+      gender: "Female",
+      body_system: "Digestive & Gut Health (अग्नि-कोष्ठ)",
+      chief_complaint: "Burning chest sensation, post-lunch sour water reflux & epigastric bloating (अम्लपित्त व आध्मान)",
+      dosha_imbalance: "Pitta-Vata",
+      agni_status: "Tikshnagni (Hyperactive)",
+      severity: "Moderate",
+      symptoms_duration: "3 Weeks",
+      nadi_pulse: "82 bpm · Chapalagati (High Pitta)",
+      jihva_tongue: "Red tip with mild yellowish center",
+      sleep_hours: "5 hrs (Heartburn wakes at night)",
+      bowel_habit: "Burning loose stools twice daily",
+      daily_care_given: "Avipattikar Churna (3g before meals with cold milk) + Kamadudha Ras (Moti Yukta 1 tab BD)",
+      diet_instructions: "Cold milk with pinch of cardamom, barley soup, soaked black raisins; strictly avoid green chilies, fried poha, tea on empty stomach",
+      lifestyle_advice: "Early dinner before 7:30 PM, 10 min Sheetali Pranayama, walking after dinner",
+      followup_date: "2026-10-03",
+      status: "Under Treatment",
+      logged_by: "Dr. Sohil Indurkar",
+      created_at: new Date(Date.now() - 172800000).toISOString()
+    },
+    {
+      id: "dbi_3",
+      patient_name: "Aarav Patil",
+      patient_phone: "+91 9822314567",
+      patient_age: 34,
+      gender: "Male",
+      body_system: "Mind, Stress & Sleep (मनोवह स्रोतस)",
+      chief_complaint: "Chronic sleep onset insomnia, high work cortisol, forehead tension headache & irritability (अनिद्रा व शिरःशूल)",
+      dosha_imbalance: "Prana Vata & Sadhaka Pitta",
+      agni_status: "Samagni (Normal)",
+      severity: "Moderate",
+      symptoms_duration: "1 Month",
+      nadi_pulse: "78 bpm · Druta gati",
+      jihva_tongue: "Clean, pink, mild tremor on extension",
+      sleep_hours: "4.5 hrs (Late sleep latency)",
+      bowel_habit: "Regular",
+      daily_care_given: "Shirodhara with Brahmi Taila (7-day course) + Ashwagandha Arishta (20ml after dinner)",
+      diet_instructions: "Warm cow milk with a pinch of nutmeg and saffron at 9:30 PM; avoid nighttime caffeine and spicy curries",
+      lifestyle_advice: "Strict digital disconnect 1 hr before bed, Pada Abhyanga (foot massage) with warm Ksheerabala taila",
+      followup_date: "2026-10-04",
+      status: "In-Progress",
+      logged_by: "Dr. Sohil Indurkar",
+      created_at: new Date(Date.now() - 259200000).toISOString()
+    },
+    {
+      id: "dbi_4",
+      patient_name: "Meera Kulkarni",
+      patient_phone: "+91 9890123456",
+      patient_age: 28,
+      gender: "Female",
+      body_system: "Respiratory & Immunity (प्राणवह स्रोतस)",
+      chief_complaint: "Morning sneezing bouts, clear nasal dripping, post-nasal drip & throat scratchiness (प्रतिश्याय व कास)",
+      dosha_imbalance: "Vata-Kapha",
+      agni_status: "Mandagni (Sluggish)",
+      severity: "Mild",
+      symptoms_duration: "5 Days",
+      nadi_pulse: "72 bpm · Snigdha",
+      jihva_tongue: "Thick white slimy coat (Ama)",
+      sleep_hours: "7 hrs",
+      bowel_habit: "Sluggish, sticky stools",
+      daily_care_given: "Nasya with Anu Taila (2 drops each nostril) + Sitopaladi Churna (3g with raw honey & ginger juice)",
+      diet_instructions: "Warm water sipping throughout day, boiled mung soup with black pepper, avoid curd, banana, ice water",
+      lifestyle_advice: "Eucalyptus steam inhalation twice daily, keep neck and chest covered in AC environments",
+      followup_date: "2026-10-02",
+      status: "Relieved",
+      logged_by: "Dr. Sohil Indurkar",
+      created_at: new Date(Date.now() - 345600000).toISOString()
+    }
   ]
 };
 
@@ -100,11 +199,18 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
   const canEdit = isAdmin || isDoctor;
 
   // Navigation sub-tabs inside ERP
-  const [activeErpTab, setActiveErpTab] = useState('inventory'); // 'inventory' | 'billing' | 'panchakarma' | 'ipd' | 'analytics'
+  const [activeErpTab, setActiveErpTab] = useState('inventory'); // 'inventory' | 'body_issues' | 'billing' | 'panchakarma' | 'ipd' | 'analytics'
   const [erpData, setErpData] = useState(() => {
     try {
       const saved = localStorage.getItem('zeniva_hospital_erp_data');
-      return saved ? JSON.parse(saved) : DEFAULT_ERP_DATA;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.daily_body_issues || !Array.isArray(parsed.daily_body_issues) || parsed.daily_body_issues.length === 0) {
+          parsed.daily_body_issues = DEFAULT_ERP_DATA.daily_body_issues;
+        }
+        return parsed;
+      }
+      return DEFAULT_ERP_DATA;
     } catch {
       return DEFAULT_ERP_DATA;
     }
@@ -165,12 +271,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
     const invs = erpData.invoices || [];
     const pks = erpData.panchakarma || [];
     const beds = erpData.ipd_beds || [];
+    const dailyIssues = erpData.daily_body_issues || [];
 
     const totalStockVal = inv.reduce((acc, curr) => acc + ((curr.stock_quantity || 0) * (curr.selling_price || 0)), 0);
     const lowStockCount = inv.filter(i => (i.stock_quantity || 0) <= (i.min_threshold || 10)).length;
     const totalRev = invs.filter(i => i.payment_status === 'Paid').reduce((acc, curr) => acc + (curr.net_total || 0), 0);
     const activePks = pks.filter(p => p.status === 'In-Progress' || p.status === 'Scheduled').length;
     const occupiedBeds = beds.filter(b => b.is_occupied === 1).length;
+    const activeDailyIssues = dailyIssues.filter(d => d.status !== 'Relieved' && d.status !== 'Resolved').length;
+    const relievedDailyIssues = dailyIssues.filter(d => d.status === 'Relieved' || d.status === 'Resolved').length;
 
     return {
       totalMedicines: inv.length,
@@ -180,7 +289,10 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
       activePks,
       occupiedBeds,
       totalBeds: beds.length,
-      occupancyRate: beds.length > 0 ? Math.round((occupiedBeds / beds.length) * 100) : 0
+      occupancyRate: beds.length > 0 ? Math.round((occupiedBeds / beds.length) * 100) : 0,
+      totalDailyIssues: dailyIssues.length,
+      activeDailyIssues,
+      relievedDailyIssues
     };
   }, [erpData]);
 
@@ -240,6 +352,35 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
     assigned_doctor: 'Dr. Sohil Indurkar',
     diet_instructions: 'Mudga Yusha (Mung soup) with ghee',
     daily_rate: 2200
+  });
+
+  // Daily Body Issues Form State
+  const [isAddBodyIssueModalOpen, setIsAddBodyIssueModalOpen] = useState(false);
+  const [viewingBodyIssue, setViewingBodyIssue] = useState(null);
+  const [bodyIssueFilterSystem, setBodyIssueFilterSystem] = useState('all');
+  const [bodyIssueFilterSeverity, setBodyIssueFilterSeverity] = useState('all');
+  const [bodyIssueFilterStatus, setBodyIssueFilterStatus] = useState('all');
+  const [bodyIssueSearch, setBodyIssueSearch] = useState('');
+  const [bodyIssueForm, setBodyIssueForm] = useState({
+    patient_name: '',
+    patient_phone: '',
+    patient_age: '35',
+    gender: 'Male',
+    body_system: 'Digestive & Gut Health (अग्नि-कोष्ठ)',
+    chief_complaint: '',
+    dosha_imbalance: 'Vata-Pitta',
+    agni_status: 'Samagni (Balanced)',
+    severity: 'Moderate',
+    symptoms_duration: '3 Days',
+    nadi_pulse: '74 bpm (Samagati)',
+    jihva_tongue: 'Clean & Pink (Niraam)',
+    sleep_hours: '7 hrs',
+    bowel_habit: 'Regular once daily',
+    daily_care_given: '',
+    diet_instructions: '',
+    lifestyle_advice: '',
+    followup_date: '',
+    status: 'In-Progress'
   });
 
   // --- ACTIONS ---
@@ -480,6 +621,133 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
     showToast(`✓ ${bedNumber} marked vacant & sanitized!`);
   };
 
+  // 7. Add Daily Body Issue (Clinical Rogi Log)
+  const handleCreateBodyIssue = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!canEditClinical && currentRole === 'public') {
+      showToast('⚠️ Showcase Mode: Login as Doctor or Admin to record clinical entries.');
+      return;
+    }
+    if (!bodyIssueForm.patient_name.trim() || !bodyIssueForm.chief_complaint.trim()) {
+      showToast('⚠️ Please enter Patient Name and Chief Complaint.');
+      return;
+    }
+
+    const newIssue = {
+      ...bodyIssueForm,
+      id: `dbi_${Date.now()}`,
+      patient_phone: bodyIssueForm.patient_phone || '+91 9011942126',
+      logged_by: currentRole === 'doctor' ? (currentUser.name || 'Dr. Sohil Indurkar') : 'Zeniva Ayurvedic Clinical Team',
+      created_at: new Date().toISOString()
+    };
+
+    const updatedIssues = [newIssue, ...(erpData.daily_body_issues || [])];
+    const newErp = { ...erpData, daily_body_issues: updatedIssues };
+    syncToLocalStorage(newErp);
+
+    setIsAddBodyIssueModalOpen(false);
+    setBodyIssueForm({
+      patient_name: '',
+      patient_phone: '',
+      patient_age: '35',
+      gender: 'Male',
+      body_system: 'Digestive & Gut Health (अग्नि-कोष्ठ)',
+      chief_complaint: '',
+      dosha_imbalance: 'Vata-Pitta',
+      agni_status: 'Samagni (Balanced)',
+      severity: 'Moderate',
+      symptoms_duration: '3 Days',
+      nadi_pulse: '74 bpm (Samagati)',
+      jihva_tongue: 'Clean & Pink (Niraam)',
+      sleep_hours: '7 hrs',
+      bowel_habit: 'Regular once daily',
+      daily_care_given: '',
+      diet_instructions: '',
+      lifestyle_advice: '',
+      followup_date: '',
+      status: 'In-Progress'
+    });
+    showToast(`✓ Clinical record for ${newIssue.patient_name} logged successfully!`);
+  };
+
+  // 8. Update Daily Body Issue Status
+  const handleUpdateBodyIssueStatus = (id, newStatus) => {
+    if (!canEditClinical && currentRole === 'public') return;
+    const updated = (erpData.daily_body_issues || []).map(item => {
+      if (item.id === id) {
+        return { ...item, status: newStatus };
+      }
+      return item;
+    });
+    syncToLocalStorage({ ...erpData, daily_body_issues: updated });
+    showToast(`✓ Case status updated to: ${newStatus}`);
+  };
+
+  // 9. Delete Daily Body Issue
+  const handleDeleteBodyIssue = (id) => {
+    if (!canEditClinical && currentRole === 'public') return;
+    const updated = (erpData.daily_body_issues || []).filter(item => item.id !== id);
+    syncToLocalStorage({ ...erpData, daily_body_issues: updated });
+    showToast('✓ Clinical record removed.');
+  };
+
+  // 10. Export Daily Body Issues to CSV
+  const handleExportBodyIssuesCSV = () => {
+    const list = erpData.daily_body_issues || [];
+    if (list.length === 0) {
+      showToast('No records to export');
+      return;
+    }
+    const headers = ['ID,Patient Name,Phone,Age,Gender,Body System,Chief Complaint,Dosha,Agni,Severity,Pulse,Sleep,Bowel,Care Prescribed,Diet,Status,Logged Date'];
+    const rows = list.map(d => [
+      `"${d.id}"`,
+      `"${d.patient_name}"`,
+      `"${d.patient_phone || ''}"`,
+      `"${d.patient_age || ''}"`,
+      `"${d.gender || ''}"`,
+      `"${d.body_system || ''}"`,
+      `"${(d.chief_complaint || '').replace(/"/g, '""')}"`,
+      `"${d.dosha_imbalance || ''}"`,
+      `"${d.agni_status || ''}"`,
+      `"${d.severity || ''}"`,
+      `"${d.nadi_pulse || ''}"`,
+      `"${d.sleep_hours || ''}"`,
+      `"${d.bowel_habit || ''}"`,
+      `"${(d.daily_care_given || '').replace(/"/g, '""')}"`,
+      `"${(d.diet_instructions || '').replace(/"/g, '""')}"`,
+      `"${d.status || ''}"`,
+      `"${d.created_at ? new Date(d.created_at).toLocaleDateString('en-IN') : ''}"`
+    ].join(','));
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Zeniva_Ayurvedic_Daily_Body_Issues_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('✓ Daily Body Issues CSV downloaded!');
+  };
+
+  // Filtered Body Issues
+  const filteredBodyIssues = useMemo(() => {
+    return (erpData.daily_body_issues || []).filter(item => {
+      const matchSearch = !bodyIssueSearch || 
+        item.patient_name.toLowerCase().includes(bodyIssueSearch.toLowerCase()) ||
+        (item.patient_phone && item.patient_phone.includes(bodyIssueSearch)) ||
+        (item.chief_complaint && item.chief_complaint.toLowerCase().includes(bodyIssueSearch.toLowerCase())) ||
+        (item.body_system && item.body_system.toLowerCase().includes(bodyIssueSearch.toLowerCase())) ||
+        (item.daily_care_given && item.daily_care_given.toLowerCase().includes(bodyIssueSearch.toLowerCase()));
+
+      const matchSystem = bodyIssueFilterSystem === 'all' || (item.body_system && item.body_system.toLowerCase().includes(bodyIssueFilterSystem.toLowerCase()));
+      const matchSeverity = bodyIssueFilterSeverity === 'all' || (item.severity && item.severity.toLowerCase() === bodyIssueFilterSeverity.toLowerCase());
+      const matchStatus = bodyIssueFilterStatus === 'all' || (item.status && item.status.toLowerCase() === bodyIssueFilterStatus.toLowerCase());
+
+      return matchSearch && matchSystem && matchSeverity && matchStatus;
+    });
+  }, [erpData.daily_body_issues, bodyIssueSearch, bodyIssueFilterSystem, bodyIssueFilterSeverity, bodyIssueFilterStatus]);
+
   // Filtered inventory
   const filteredInventory = useMemo(() => {
     return (erpData.inventory || []).filter(item => {
@@ -544,6 +812,14 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
           {isAdmin ? (
             <div className="flex flex-wrap items-center gap-2.5">
               <button
+                onClick={() => setIsAddBodyIssueModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 text-white font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
+              >
+                <HeartPulse className="w-4 h-4" />
+                <span>+ Log Body Issue</span>
+              </button>
+
+              <button
                 onClick={() => setIsInvoiceModalOpen(true)}
                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
               >
@@ -570,6 +846,14 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
             </div>
           ) : isDoctor ? (
             <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                onClick={() => setIsAddBodyIssueModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-700 hover:from-teal-700 hover:to-emerald-800 text-white font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
+              >
+                <HeartPulse className="w-4 h-4" />
+                <span>+ Log Body Issue</span>
+              </button>
+
               <button
                 onClick={() => setIsInvoiceModalOpen(true)}
                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-102"
@@ -618,7 +902,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
         </div>
 
         {/* Live Metrics Grid */}
-        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-6">
           <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
             <p className="text-[11px] text-stone-300 font-medium">Aushadhi Inventory</p>
             <div className="flex items-baseline justify-between mt-1">
@@ -630,6 +914,17 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
               )}
             </div>
             <p className="text-[10px] text-stone-400 mt-0.5">Valued at ₹{stats.totalStockVal.toLocaleString('en-IN')}</p>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
+            <p className="text-[11px] text-stone-300 font-medium">Daily Body Issues</p>
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-xl sm:text-2xl font-black font-mono text-purple-300">{stats.totalDailyIssues || 0}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-400/40 font-bold">
+                {stats.activeDailyIssues || 0} Active
+              </span>
+            </div>
+            <p className="text-[10px] text-stone-400 mt-0.5">{stats.relievedDailyIssues || 0} relieved / restored</p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
@@ -654,7 +949,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
             <p className="text-[10px] text-stone-400 mt-0.5">Shirodhara, Janu Basti, Swedana</p>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
+          <div className="bg-white/5 backdrop-blur-md rounded-2xl p-3.5 border border-white/10 col-span-2 sm:col-span-1">
             <p className="text-[11px] text-stone-300 font-medium">IPD Bed Occupancy</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl sm:text-2xl font-black font-mono text-cyan-300">{stats.occupiedBeds} / {stats.totalBeds}</span>
@@ -672,6 +967,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
         <div className="bg-white rounded-2xl p-1.5 shadow-md border border-stone-200/80 flex overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap items-center gap-1.5">
           {[
             { id: 'inventory', label: '🌿 Aushadhi Bhandar (Stock)', badge: erpData.inventory?.length },
+            { id: 'body_issues', label: '🩺 Daily Body Issues & Rogi Tracker', badge: erpData.daily_body_issues?.length || 0 },
             { id: 'billing', label: '🧾 GST Billing & Invoices', badge: erpData.invoices?.length },
             { id: 'panchakarma', label: '💆‍♂️ Panchakarma Scheduler', badge: stats.activePks },
             { id: 'ipd', label: '🛏️ IPD Wards & Beds', badge: `${stats.occupiedBeds}/${stats.totalBeds}` },
@@ -1234,6 +1530,337 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 6: DAILY BODY ISSUES & AYURVEDIC ROGI TRACKER */}
+        {/* ============================================================== */}
+        {activeErpTab === 'body_issues' && (
+          <div className="space-y-4 animate-in fade-in">
+            {/* Filter and Search Bar */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-stone-200/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+              <div className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search patient, complaint, body area, herb..."
+                  value={bodyIssueSearch}
+                  onChange={(e) => setBodyIssueSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-600/30 text-xs sm:text-sm"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={bodyIssueFilterSystem}
+                  onChange={(e) => setBodyIssueFilterSystem(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-600/30"
+                >
+                  <option value="all">All Body Systems</option>
+                  <option value="Spine">Spine & Joint Health (अस्थि-संधि)</option>
+                  <option value="Digestive">Digestive & Gut (अग्नि-कोष्ठ)</option>
+                  <option value="Mind">Mind, Stress & Sleep (मनोवह)</option>
+                  <option value="Respiratory">Respiratory & Cold (प्राणवह)</option>
+                  <option value="Skin">Skin & Complexion (त्वचा-रक्त)</option>
+                </select>
+
+                <select
+                  value={bodyIssueFilterStatus}
+                  onChange={(e) => setBodyIssueFilterStatus(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-600/30"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="In-Progress">In-Progress</option>
+                  <option value="Under Treatment">Under Treatment</option>
+                  <option value="Relieved">Relieved / Resolved</option>
+                </select>
+
+                <button
+                  onClick={handleExportBodyIssuesCSV}
+                  className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Export to CSV"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Export CSV</span>
+                </button>
+
+                {canEditClinical && (
+                  <button
+                    onClick={() => setIsAddBodyIssueModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-800 hover:to-emerald-800 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer transition-all hover:scale-102"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Log Daily Issue</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Ayurvedic Clinical Guidance Banner */}
+            <div className="bg-gradient-to-r from-teal-900/10 via-purple-900/5 to-amber-900/10 border border-teal-600/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-teal-800 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <HeartPulse className="w-5 h-5 text-teal-200" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-stone-900">Charaka Samhita Rogi Pariksha & Daily Health Ledger (रोगनिदान व दैनंदिन नोंदी)</h4>
+                  <p className="text-[11px] text-stone-600 mt-0.5">
+                    Records daily somatic complaints, Doshic vitiation, Agni status, Nadi pulse, and prescribed classical herbal interventions with full clinical audit trail.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                <span className="px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-stone-700 font-mono text-[11px] font-bold">
+                  {filteredBodyIssues.length} Active Records
+                </span>
+              </div>
+            </div>
+
+            {/* Mobile View: Cards (< 768px) */}
+            <div className="md:hidden space-y-3">
+              {filteredBodyIssues.length === 0 ? (
+                <div className="bg-white p-8 text-center rounded-2xl border border-stone-200">
+                  <AlertCircle className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                  <p className="font-bold text-stone-700 text-sm">No Daily Body Issue records found</p>
+                  <p className="text-xs text-stone-400 mt-1">Try changing filters or log a new patient body issue.</p>
+                </div>
+              ) : (
+                filteredBodyIssues.map(issue => (
+                  <div key={issue.id} className="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/80 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1C1030] to-[#4A267A] text-amber-300 font-serif font-black flex items-center justify-center border border-purple-200 shadow-xs shrink-0 text-xs">
+                          {(issue.patient_name || 'P').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-stone-900 text-sm">{issue.patient_name}</h4>
+                          <p className="text-[11px] text-stone-500 font-mono">
+                            {issue.patient_phone} · {issue.patient_age} yrs ({issue.gender})
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono shrink-0 ${
+                        issue.status === 'Relieved' 
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                          : issue.status === 'Under Treatment'
+                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                          : 'bg-purple-100 text-purple-800 border border-purple-300'
+                      }`}>
+                        {issue.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 bg-amber-50/50 p-3 rounded-xl border border-amber-200/60 text-xs">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-teal-900">
+                        <Activity className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                        <span>{issue.body_system}</span>
+                        <span className="text-[10px] text-stone-400 font-normal">({issue.symptoms_duration})</span>
+                      </div>
+                      <p className="text-stone-800 font-medium leading-relaxed">
+                        {issue.chief_complaint}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div className="bg-stone-50 p-2 rounded-lg border border-stone-200">
+                        <span className="text-stone-400 block text-[10px]">Dosha & Agni:</span>
+                        <span className="font-bold text-purple-900">{issue.dosha_imbalance}</span>
+                        <span className="text-stone-500 block text-[10px]">{issue.agni_status}</span>
+                      </div>
+                      <div className="bg-stone-50 p-2 rounded-lg border border-stone-200">
+                        <span className="text-stone-400 block text-[10px]">Vitals / Pulse:</span>
+                        <span className="font-mono text-stone-800 font-medium block truncate">{issue.nadi_pulse}</span>
+                        <span className="text-stone-500 block text-[10px] truncate">Tongue: {issue.jihva_tongue}</span>
+                      </div>
+                    </div>
+
+                    {issue.daily_care_given && (
+                      <div className="text-xs bg-teal-50/60 p-2.5 rounded-xl border border-teal-200/70 text-teal-950">
+                        <span className="font-bold text-[10px] text-teal-800 uppercase tracking-wide block mb-0.5">Ayurvedic Protocol & Herbs:</span>
+                        <p className="font-medium">{issue.daily_care_given}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1 border-t border-stone-100 text-xs">
+                      <span className="text-[10px] text-stone-400">
+                        Follow-up: <strong className="text-stone-700">{issue.followup_date || 'In 7 days'}</strong>
+                      </span>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setViewingBodyIssue(issue)}
+                          className="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-900 hover:bg-purple-100 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Slip</span>
+                        </button>
+
+                        {canEditClinical && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateBodyIssueStatus(issue.id, issue.status === 'Relieved' ? 'In-Progress' : 'Relieved')}
+                              className={`p-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                                issue.status === 'Relieved'
+                                  ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                                  : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                              }`}
+                              title={issue.status === 'Relieved' ? 'Mark In-Progress' : 'Mark Relieved'}
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteBodyIssue(issue.id)}
+                              className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop View: Full Clinical Table (Screen >= 768px) */}
+            <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-stone-200/80 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <thead>
+                    <tr className="bg-[#FAF7F2] border-b border-stone-200 text-stone-600 font-bold uppercase text-[11px] tracking-wider">
+                      <th className="py-3.5 px-4">Patient Profile</th>
+                      <th className="py-3.5 px-3">Body Area & Chief Complaint</th>
+                      <th className="py-3.5 px-3">Dosha & Agni</th>
+                      <th className="py-3.5 px-3">Clinical Vitals</th>
+                      <th className="py-3.5 px-3">Prescribed Ayurvedic Therapy</th>
+                      <th className="py-3.5 px-3 text-center">Status</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {filteredBodyIssues.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-stone-400">
+                          <p className="font-semibold text-xs">No matching Daily Body Issue records found.</p>
+                          <p className="text-[10px] text-stone-400 mt-0.5">Use "Log Daily Issue" button above to record patient complaints.</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredBodyIssues.map(issue => (
+                        <tr key={issue.id} className="hover:bg-teal-50/20 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1C1030] to-[#4A267A] text-amber-300 font-serif font-black flex items-center justify-center border border-purple-200 shadow-2xs shrink-0 text-xs">
+                                {(issue.patient_name || 'P').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-bold text-stone-900 leading-tight">{issue.patient_name}</p>
+                                <p className="text-[10px] text-stone-500 font-mono">
+                                  {issue.patient_phone ? (issue.patient_phone.startsWith('+91') ? issue.patient_phone : `+91 ${issue.patient_phone}`) : '—'}
+                                </p>
+                                <p className="text-[10px] text-stone-400 font-medium">
+                                  {issue.patient_age} yrs · {issue.gender}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-3 max-w-xs">
+                            <span className="inline-block px-2 py-0.5 rounded-md bg-teal-100 text-teal-900 font-bold text-[10px] mb-1">
+                              {issue.body_system}
+                            </span>
+                            <p className="text-xs font-semibold text-stone-800 line-clamp-2 leading-relaxed">
+                              {issue.chief_complaint}
+                            </p>
+                            <span className="text-[10px] text-stone-400 block mt-0.5">Duration: {issue.symptoms_duration}</span>
+                          </td>
+
+                          <td className="py-3.5 px-3">
+                            <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] inline-block mb-1">
+                              {issue.dosha_imbalance}
+                            </span>
+                            <p className="text-[11px] text-stone-600 font-medium">{issue.agni_status}</p>
+                            <span className={`text-[10px] font-bold ${
+                              issue.severity === 'Severe' ? 'text-rose-600' : issue.severity === 'Moderate' ? 'text-amber-600' : 'text-emerald-600'
+                            }`}>
+                              Severity: {issue.severity}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-3 text-xs">
+                            <p className="font-mono text-stone-700 font-semibold">{issue.nadi_pulse}</p>
+                            <p className="text-[10px] text-stone-500">Jihva: {issue.jihva_tongue}</p>
+                            <p className="text-[10px] text-stone-400">Sleep: {issue.sleep_hours}</p>
+                          </td>
+
+                          <td className="py-3.5 px-3 max-w-xs text-xs">
+                            <p className="font-medium text-teal-950 line-clamp-2 leading-relaxed bg-teal-50/70 p-2 rounded-lg border border-teal-200/50">
+                              {issue.daily_care_given}
+                            </p>
+                            {issue.diet_instructions && (
+                              <p className="text-[10px] text-stone-500 mt-1 line-clamp-1">Pathya: {issue.diet_instructions}</p>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono inline-block ${
+                              issue.status === 'Relieved' 
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' 
+                                : issue.status === 'Under Treatment'
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                : 'bg-purple-100 text-purple-800 border border-purple-300'
+                            }`}>
+                              {issue.status}
+                            </span>
+                            <p className="text-[10px] text-stone-400 mt-1 font-mono">Next: {issue.followup_date || '7 days'}</p>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => setViewingBodyIssue(issue)}
+                                className="p-1.5 rounded-lg text-purple-700 hover:bg-purple-100 transition-colors cursor-pointer"
+                                title="View Rogi Pariksha Slip"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+
+                              {canEditClinical && (
+                                <>
+                                  <button
+                                    onClick={() => handleUpdateBodyIssueStatus(issue.id, issue.status === 'Relieved' ? 'In-Progress' : 'Relieved')}
+                                    className={`p-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                                      issue.status === 'Relieved'
+                                        ? 'text-amber-700 hover:bg-amber-100'
+                                        : 'text-emerald-700 hover:bg-emerald-100'
+                                    }`}
+                                    title={issue.status === 'Relieved' ? 'Mark In-Progress' : 'Mark Relieved'}
+                                  >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  </button>
+
+                                  <button
+                                    onClick={() => handleDeleteBodyIssue(issue.id)}
+                                    className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                    title="Delete Record"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -1881,6 +2508,427 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <div className="text-right">
                   <div className="font-serif italic font-bold text-purple-900 text-sm">Dr. Sohil Indurkar</div>
                   <p className="text-[10px] text-stone-500 border-t border-stone-300 pt-0.5 mt-0.5">Authorized Signatory / Medical Superintendent</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 6: LOG DAILY BODY ISSUE & ROGI CLINICAL RECORD */}
+      {/* ============================================================== */}
+      {isAddBodyIssueModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-stone-200 animate-in fade-in max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3.5 border-b border-stone-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center">
+                  <HeartPulse className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-serif font-bold text-stone-900 leading-tight">
+                    Log Ayurvedic Daily Body Issue (दैनिक शारीरिक विकार)
+                  </h3>
+                  <p className="text-[11px] text-stone-500">Charaka Samhita Rogi Pariksha & Clinical Symptoms Entry</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsAddBodyIssueModalOpen(false)} 
+                className="p-1 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Fill Button */}
+            <div className="mt-3 flex items-center justify-between bg-stone-50 p-2.5 rounded-xl border border-stone-200/80 text-xs">
+              <span className="text-stone-600 font-medium">Quick Fill Active Registered Patient:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const patStr = localStorage.getItem('zeniva_patient_user');
+                    if (patStr) {
+                      const p = JSON.parse(patStr);
+                      if (p && p.name) {
+                        setBodyIssueForm(prev => ({
+                          ...prev,
+                          patient_name: p.name,
+                          patient_phone: p.phone || prev.patient_phone,
+                          patient_age: p.age || prev.patient_age,
+                          gender: p.gender || prev.gender,
+                          dosha_imbalance: p.prakriti || p.dosha || prev.dosha_imbalance
+                        }));
+                        showToast(`✓ Loaded data for ${p.name}`);
+                      }
+                    } else {
+                      showToast('No logged in patient found in session');
+                    }
+                  } catch (e) {}
+                }}
+                className="px-2.5 py-1 rounded-lg bg-teal-100 hover:bg-teal-200 text-teal-900 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Auto-fill Active Patient</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateBodyIssue} className="space-y-3.5 mt-4 text-xs sm:text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Patient Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={bodyIssueForm.patient_name}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, patient_name: e.target.value })}
+                    placeholder="e.g. Kamlesh Indurkar"
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Mobile Number (+91)</label>
+                  <input
+                    type="tel"
+                    value={bodyIssueForm.patient_phone}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, patient_phone: e.target.value })}
+                    placeholder="e.g. +91 9011942126"
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Age (Yrs)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="110"
+                    value={bodyIssueForm.patient_age}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, patient_age: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Gender</label>
+                  <select
+                    value={bodyIssueForm.gender}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, gender: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                  >
+                    <option value="Male">Male (पुरुष)</option>
+                    <option value="Female">Female (स्त्री)</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Duration</label>
+                  <input
+                    type="text"
+                    value={bodyIssueForm.symptoms_duration}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, symptoms_duration: e.target.value })}
+                    placeholder="e.g. 4 Days / 2 Wks"
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Body Area / Srotas System *</label>
+                  <select
+                    value={bodyIssueForm.body_system}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, body_system: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 font-medium"
+                  >
+                    <option value="Digestive & Gut Health (अग्नि-कोष्ठ)">Digestive & Gut Health (अग्नि-कोष्ठ)</option>
+                    <option value="Spine & Joint Health (अस्थि-संधि)">Spine & Joint Health (अस्थि-संधि)</option>
+                    <option value="Mind, Stress & Sleep (मनोवह स्रोतस)">Mind, Stress & Sleep (मनोवह स्रोतस)</option>
+                    <option value="Respiratory & Immunity (प्राणवह स्रोतस)">Respiratory & Immunity (प्राणवह स्रोतस)</option>
+                    <option value="Skin & Complexion (त्वचा-रक्त)">Skin & Complexion (त्वचा-रक्त)</option>
+                    <option value="Metabolic & Vitality (ओज व धातु)">Metabolic & Vitality (ओज व धातु)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Severity Level</label>
+                  <select
+                    value={bodyIssueForm.severity}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, severity: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                  >
+                    <option value="Mild">Mild (सौम्य)</option>
+                    <option value="Moderate">Moderate (मध्यम)</option>
+                    <option value="Severe">Severe (तीव्र)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Daily Chief Complaint / Somatic Symptoms *</label>
+                <textarea
+                  rows={2}
+                  required
+                  value={bodyIssueForm.chief_complaint}
+                  onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, chief_complaint: e.target.value })}
+                  placeholder="e.g. Sharp pain in lower back on waking up, knee crepitus when bending, heaviness in stomach after lunch..."
+                  className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/30"
+                ></textarea>
+              </div>
+
+              {/* Ayurvedic Examination Findings */}
+              <div className="bg-stone-50/80 p-3 rounded-2xl border border-stone-200 space-y-3">
+                <span className="font-bold text-stone-900 text-xs uppercase tracking-wide flex items-center gap-1.5 text-purple-900">
+                  <MortarPestleGraphic className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Ayurvedic Rogi Pariksha Parameters</span>
+                </span>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div>
+                    <label className="text-stone-600 block mb-0.5 text-[11px] font-medium">Dosha Imbalance</label>
+                    <select
+                      value={bodyIssueForm.dosha_imbalance}
+                      onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, dosha_imbalance: e.target.value })}
+                      className="w-full p-2 rounded-lg border border-stone-200 bg-white"
+                    >
+                      <option value="Vata (वात)">Vata (वात)</option>
+                      <option value="Pitta (पित्त)">Pitta (पित्त)</option>
+                      <option value="Kapha (कफ)">Kapha (कफ)</option>
+                      <option value="Vata-Pitta">Vata-Pitta</option>
+                      <option value="Pitta-Kapha">Pitta-Kapha</option>
+                      <option value="Vata-Kapha">Vata-Kapha</option>
+                      <option value="Tridoshaja">Tridoshaja (त्रिदोषज)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-stone-600 block mb-0.5 text-[11px] font-medium">Agni (Digestion)</label>
+                    <select
+                      value={bodyIssueForm.agni_status}
+                      onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, agni_status: e.target.value })}
+                      className="w-full p-2 rounded-lg border border-stone-200 bg-white"
+                    >
+                      <option value="Samagni (Balanced)">Samagni (Balanced)</option>
+                      <option value="Mandagni (Sluggish)">Mandagni (Sluggish)</option>
+                      <option value="Tikshnagni (Acidic)">Tikshnagni (Acidic)</option>
+                      <option value="Vishamagni (Irregular)">Vishamagni (Irregular)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-stone-600 block mb-0.5 text-[11px] font-medium">Nadi (Pulse)</label>
+                    <input
+                      type="text"
+                      value={bodyIssueForm.nadi_pulse}
+                      onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, nadi_pulse: e.target.value })}
+                      placeholder="e.g. 74 bpm"
+                      className="w-full p-2 rounded-lg border border-stone-200 bg-white font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-stone-600 block mb-0.5 text-[11px] font-medium">Tongue (Jihva)</label>
+                    <select
+                      value={bodyIssueForm.jihva_tongue}
+                      onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, jihva_tongue: e.target.value })}
+                      className="w-full p-2 rounded-lg border border-stone-200 bg-white"
+                    >
+                      <option value="Clean & Pink (Niraam)">Clean & Pink (Niraam)</option>
+                      <option value="White Coated (Saam/Ama)">White Coated (Saam/Ama)</option>
+                      <option value="Yellow/Red Coated (Pitta)">Yellow/Red Coated (Pitta)</option>
+                      <option value="Dry & Fissured (Vata)">Dry & Fissured (Vata)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Prescribed Ayurvedic Formulation & Therapy</label>
+                <input
+                  type="text"
+                  value={bodyIssueForm.daily_care_given}
+                  onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, daily_care_given: e.target.value })}
+                  placeholder="e.g. Avipattikar Churna (3g) before meals + Sthanika Abhyanga with warm oil"
+                  className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Pathya (Dietary Guidance)</label>
+                  <input
+                    type="text"
+                    value={bodyIssueForm.diet_instructions}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, diet_instructions: e.target.value })}
+                    placeholder="e.g. Warm mung dal, avoid spicy & fermented food"
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-stone-700 block mb-1">Next Follow-up Date</label>
+                  <input
+                    type="date"
+                    value={bodyIssueForm.followup_date}
+                    onChange={(e) => setBodyIssueForm({ ...bodyIssueForm, followup_date: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-stone-200 bg-stone-50"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddBodyIssueModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 font-bold cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-800 hover:to-emerald-800 text-white font-bold shadow-md cursor-pointer transition-all"
+                >
+                  Save Daily Issue Record
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 7: VIEW / PRINT DAILY BODY ISSUE ROGI SLIP */}
+      {/* ============================================================== */}
+      {viewingBodyIssue && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-stone-200 animate-in fade-in max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <span className="text-xs font-mono font-bold text-purple-900 uppercase tracking-widest flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Ayurvedic Clinical Case Sheet</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Slip</span>
+                </button>
+                <button onClick={() => setViewingBodyIssue(null)} className="p-1 rounded-full hover:bg-stone-100 cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Slip Content */}
+            <div className="mt-4 p-5 rounded-2xl bg-[#FCFAF6] border border-amber-200/80 font-sans space-y-4">
+              <div className="flex items-center justify-between border-b border-amber-200/60 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#1C1030] flex items-center justify-center text-amber-300">
+                    <ZenivaLogo className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-black text-stone-900 text-base">Zeniva Ayurvedic Hospital & Research</h3>
+                    <p className="text-[10px] text-stone-500">Statutory MCIM / AYUSH Certified Clinical Facility</p>
+                  </div>
+                </div>
+                <div className="text-right text-[10px] font-mono text-stone-500">
+                  <p>Case ID: <strong className="text-stone-900">{viewingBodyIssue.id}</strong></p>
+                  <p>Date: {viewingBodyIssue.created_at ? new Date(viewingBodyIssue.created_at).toLocaleDateString('en-IN') : 'Today'}</p>
+                </div>
+              </div>
+
+              {/* Patient Profile */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white p-3 rounded-xl border border-stone-200">
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Patient:</span>
+                  <span className="font-bold text-stone-900">{viewingBodyIssue.patient_name}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Phone:</span>
+                  <span className="font-mono text-stone-800">{viewingBodyIssue.patient_phone || '—'}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Age / Gender:</span>
+                  <span className="text-stone-800">{viewingBodyIssue.patient_age} yrs ({viewingBodyIssue.gender})</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Status:</span>
+                  <span className="font-bold text-emerald-800">{viewingBodyIssue.status}</span>
+                </div>
+              </div>
+
+              {/* Chief Complaint */}
+              <div className="bg-amber-50/70 p-3 rounded-xl border border-amber-200 text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block mb-1">
+                  Body Area: {viewingBodyIssue.body_system}
+                </span>
+                <p className="font-medium text-stone-900 leading-relaxed">
+                  {viewingBodyIssue.chief_complaint}
+                </p>
+              </div>
+
+              {/* Rogi Pariksha Findings */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] bg-white p-3 rounded-xl border border-stone-200">
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Dosha Imbalance:</span>
+                  <span className="font-bold text-purple-900">{viewingBodyIssue.dosha_imbalance}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Agni Status:</span>
+                  <span className="font-semibold text-stone-800">{viewingBodyIssue.agni_status}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Nadi Pulse:</span>
+                  <span className="font-mono font-medium text-stone-800">{viewingBodyIssue.nadi_pulse}</span>
+                </div>
+                <div>
+                  <span className="text-stone-400 block text-[10px]">Tongue / Jihva:</span>
+                  <span className="text-stone-800">{viewingBodyIssue.jihva_tongue}</span>
+                </div>
+              </div>
+
+              {/* Prescribed Formulation */}
+              {viewingBodyIssue.daily_care_given && (
+                <div className="bg-teal-50 p-3 rounded-xl border border-teal-200 text-xs text-teal-950">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-900 block mb-1">
+                    Prescribed Classical Ayurvedic Treatment & Formulation:
+                  </span>
+                  <p className="font-medium">{viewingBodyIssue.daily_care_given}</p>
+                </div>
+              )}
+
+              {/* Diet & Lifestyle Guidance */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                {viewingBodyIssue.diet_instructions && (
+                  <div className="bg-white p-2.5 rounded-xl border border-stone-200">
+                    <span className="text-[10px] font-bold text-stone-400 block mb-0.5">Pathya (Diet Guidance):</span>
+                    <p className="text-stone-800">{viewingBodyIssue.diet_instructions}</p>
+                  </div>
+                )}
+                {viewingBodyIssue.lifestyle_advice && (
+                  <div className="bg-white p-2.5 rounded-xl border border-stone-200">
+                    <span className="text-[10px] font-bold text-stone-400 block mb-0.5">Lifestyle Guidance:</span>
+                    <p className="text-stone-800">{viewingBodyIssue.lifestyle_advice}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer & Signature */}
+              <div className="pt-3 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-stone-500">
+                <div>
+                  <p>Next Follow-up: <strong className="text-stone-900">{viewingBodyIssue.followup_date || '7 Days'}</strong></p>
+                  <p className="text-[10px] text-stone-400">Logged by: {viewingBodyIssue.logged_by || 'Dr. Sohil Indurkar'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-serif italic font-bold text-purple-900 text-sm">Dr. Sohil Indurkar</p>
+                  <p className="text-[10px] text-stone-400">Chief Ayurvedic Consultant</p>
                 </div>
               </div>
             </div>
