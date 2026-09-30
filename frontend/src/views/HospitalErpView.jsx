@@ -835,6 +835,19 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <span>+ Add Medicine</span>
               </button>
 
+              <a
+                href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                download="Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/30 text-amber-200 hover:text-amber-100 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                title="Download Official ERP Architecture & Summary Document (PDF)"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">ERP Summary</span>
+                <Download className="w-3 h-3 text-amber-300" />
+              </a>
+
               <button
                 onClick={loadBackendData}
                 disabled={isLoading}
@@ -862,6 +875,19 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <span>+ New Invoice</span>
               </button>
 
+              <a
+                href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                download="Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/30 text-amber-200 hover:text-amber-100 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                title="Download Official ERP Architecture & Summary Document (PDF)"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">ERP Summary</span>
+                <Download className="w-3 h-3 text-amber-300" />
+              </a>
+
               <button
                 onClick={loadBackendData}
                 disabled={isLoading}
@@ -877,6 +903,19 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <Lock className="w-3.5 h-3.5 text-amber-300" />
                 <span>Read-Only Preview Mode</span>
               </div>
+
+              <a
+                href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                download="Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/30 text-amber-200 hover:text-amber-100 font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                title="Download Official ERP Architecture & Summary Document (PDF)"
+              >
+                <FileText className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">ERP Summary PDF</span>
+                <Download className="w-3 h-3 text-amber-300" />
+              </a>
 
               <button
                 onClick={() => {
