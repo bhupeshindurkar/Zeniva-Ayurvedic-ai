@@ -65,115 +65,131 @@ export const AdminDashboard = ({
     return [];
   });
 
-  const [patientsList, setPatientsList] = useState([
-    {
-      id: 'usr_patient_demo_01',
-      name: 'Ayurvedic Patient',
-      phone: '+91 98••••••01',
-      email: 'patient.care@zeniva.ai',
-      age: 21,
-      gender: 'Male',
-      prakriti: '⚡ Joint Mobility & Stamina Care Profile',
-      vikriti: 'Mild Joint Stiffness & Muscle Fatigue',
-      blood_group: 'B+',
-      diet: 'Warm Wholesome Vegan Grains & Ghee',
-      agribalam: 'Optimal / Balanced Digestion',
-      location: 'Nagpur, Maharashtra',
-      city: 'Nagpur',
-      status: 'active',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-      created_at: '2026-09-01 10:00:00'
-    },
-    {
-      id: 'usr_9876543210',
-      name: 'Aarav Patil',
-      phone: '9876543210',
-      email: 'aarav.patil@gmail.com',
-      age: 34,
-      gender: 'Male',
-      prakriti: '🔥 Digestion, Acidity & Gut Health Profile',
-      vikriti: 'Heartburn, Acid Reflux & Gastric Warmth',
-      blood_group: 'O+',
-      diet: 'Vegetarian Cooling Sattvic Foods',
-      agribalam: 'Hyperactive / High Acid Digestion',
-      location: 'Pune, Maharashtra',
-      city: 'Pune',
-      status: 'active',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120',
-      created_at: '2026-08-25 14:30:00'
-    },
-    {
-      id: 'usr_9822011223',
-      name: 'Neha Kulkarni',
-      phone: '9822011223',
-      email: 'neha.kulkarni@yahoo.com',
-      age: 29,
-      gender: 'Female',
-      prakriti: '🍃 Immunity & Metabolic Vitality Profile',
-      vikriti: 'Sluggish Metabolism & Seasonal Lethargy',
-      blood_group: 'A+',
-      diet: 'Low-oil Warm Diet with Ginger & Pepper',
-      agribalam: 'Sluggish Digestion (Mandaagni)',
-      location: 'Mumbai, Maharashtra',
-      city: 'Mumbai',
-      status: 'active',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120',
-      created_at: '2026-08-20 18:20:00'
-    },
-    {
-      id: 'usr_9833455667',
-      name: 'Rohan Deshmukh',
-      phone: '9833455667',
-      email: 'rohan.deshmukh@gmail.com',
-      age: 42,
-      gender: 'Male',
-      prakriti: '🍃 Respiratory Defense & Cold Relief Profile',
-      vikriti: 'Seasonal Airway Congestion & Throat Irritation',
-      blood_group: 'B+',
-      diet: 'Warm Soups & Herbal Khichdi',
-      agribalam: 'Variable Digestion (Vishamagni)',
-      location: 'Nagpur, Maharashtra',
-      city: 'Nagpur',
-      status: 'active',
-      avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=120',
-      created_at: '2026-08-15 09:10:00'
-    },
-    {
-      id: 'usr_9844566778',
-      name: 'Sneha Gawande',
-      phone: '9844566778',
-      email: 'sneha.gawande@outlook.com',
-      age: 38,
-      gender: 'Female',
-      prakriti: '🌙 Stress, Sleep & Skin Wellness Profile',
-      vikriti: 'Work-Stress Overthinking & Skin Redness',
-      blood_group: 'AB+',
-      diet: 'Cooling Coconut & Ghee Infused Foods',
-      agribalam: 'Sensitive Digestion (Tikshnagni)',
-      location: 'Nashik, Maharashtra',
-      city: 'Nashik',
-      status: 'active',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120',
-      created_at: '2026-08-10 11:45:00'
+  const [patientsList, setPatientsList] = useState(() => {
+    try {
+      const savedPatStr = localStorage.getItem('zeniva_patient_user');
+      const regListStr = localStorage.getItem('zeniva_all_patients_registry');
+      const list = [];
+      const seen = new Set();
+      const FAKE_PATIENT_IDS = ['usr_patient_demo_01', 'usr_9876543210', 'usr_9822011223', 'usr_9833455667', 'usr_9844566778'];
+
+      if (savedPatStr) {
+        const p = JSON.parse(savedPatStr);
+        if (p && p.name && p.name !== 'Guest Visitor' && !FAKE_PATIENT_IDS.includes(p.id)) {
+          const clPhone = p.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '';
+          const key = clPhone || p.id || p.name;
+          seen.add(key);
+          list.push({
+            id: p.id || 'pat_active',
+            name: p.name,
+            phone: clPhone || p.phone || '8766903403',
+            email: p.email || 'bhupeshindurkar6@gmail.com',
+            age: p.age || 21,
+            gender: p.gender || 'Male',
+            prakriti: p.prakriti || p.dosha || '🌙 Stress & Sleep Wellness Profile',
+            vikriti: p.vikriti || 'Work-Stress & Sleep Wellness',
+            blood_group: p.blood_group || p.bloodGroup || 'B+',
+            diet: p.diet || 'Vegan Whole Plant Foods',
+            agribalam: p.agribalam || 'Balanced (Samagni)',
+            location: p.location || p.city || 'Pauni, Maharashtra',
+            city: p.city || p.location || 'Pauni',
+            status: 'active',
+            avatar: p.avatar && !p.avatar.includes('unsplash.com') ? p.avatar : '',
+            created_at: p.created_at || new Date().toISOString()
+          });
+        }
+      }
+
+      if (regListStr) {
+        const regs = JSON.parse(regListStr);
+        if (Array.isArray(regs)) {
+          regs.forEach(p => {
+            if (p && p.name && p.name !== 'Guest Visitor' && !FAKE_PATIENT_IDS.includes(p.id)) {
+              const clPhone = p.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '';
+              const key = clPhone || p.id || p.name;
+              if (!seen.has(key)) {
+                seen.add(key);
+                list.push({
+                  id: p.id || `pat_${Date.now()}`,
+                  name: p.name,
+                  phone: clPhone || p.phone || '',
+                  email: p.email || '',
+                  age: p.age || 25,
+                  gender: p.gender || 'Male',
+                  prakriti: p.prakriti || p.dosha || '🌿 Ayurvedic Wellness',
+                  vikriti: p.vikriti || 'None reported',
+                  blood_group: p.blood_group || p.bloodGroup || 'B+',
+                  diet: p.diet || 'Wholesome Diet',
+                  agribalam: p.agribalam || 'Balanced',
+                  location: p.location || p.city || 'Nagpur, Maharashtra',
+                  city: p.city || 'Nagpur',
+                  status: 'active',
+                  avatar: p.avatar && !p.avatar.includes('unsplash.com') ? p.avatar : '',
+                  created_at: p.created_at || new Date().toISOString()
+                });
+              }
+            }
+          });
+        }
+      }
+      return list;
+    } catch (e) {
+      return [];
     }
-  ]);
+  });
 
   // Assessment History
-  const [assessmentHistoryList, setAssessmentHistoryList] = useState([
-    { id: 'ASM-101', patient: 'Kiran Verma', phone: '+91 98••••••01', prakriti: '⚡ Joint Mobility & Stamina', vikriti: 'Muscle & Joint Fatigue', agni: 'Optimal', nadi: 'Steady Rhythm (72 bpm)', score: '96% Match', date: '03 Sep 2026', time: '11:30 AM', status: 'Active' },
-    { id: 'ASM-102', patient: 'Aarav Patil', phone: '9876543210', prakriti: '🔥 Digestion & Acidity Care', vikriti: 'Acid Reflux & Gastric Heat', agni: 'High Acid', nadi: 'Active Rhythm (82 bpm)', score: '94% Match', date: '02 Sep 2026', time: '04:15 PM', status: 'Prescribed' },
-    { id: 'ASM-103', patient: 'Neha Kulkarni', phone: '9822011223', prakriti: '🍃 Immunity & Cold Defense', vikriti: 'Seasonal Sluggishness', agni: 'Sluggish', nadi: 'Calm Rhythm (68 bpm)', score: '98% Match', date: '01 Sep 2026', time: '02:00 PM', status: 'Follow-up' },
-    { id: 'ASM-104', patient: 'Rohan Deshmukh', phone: '9833455667', prakriti: '🍃 Respiratory Health Shield', vikriti: 'Chest Congestion & Cough', agni: 'Variable', nadi: 'Steady Rhythm (70 bpm)', score: '92% Match', date: '31 Aug 2026', time: '10:45 AM', status: 'Resolved' },
-    { id: 'ASM-105', patient: 'Sneha Gawande', phone: '9844566778', prakriti: '🌙 Stress & Sleep Wellness', vikriti: 'Sleep Disruption & Stress', agni: 'Sensitive', nadi: 'Active Rhythm (78 bpm)', score: '95% Match', date: '30 Aug 2026', time: '06:20 PM', status: 'Active' }
-  ]);
+  const [assessmentHistoryList, setAssessmentHistoryList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('zeniva_assessment_history');
+      if (saved) return JSON.parse(saved);
+      const localPatStr = localStorage.getItem('zeniva_patient_user');
+      if (localPatStr) {
+        const lp = JSON.parse(localPatStr);
+        if (lp && lp.name && lp.name !== 'Guest Visitor') {
+          return [{
+            id: 'ASM-101',
+            patient: lp.name,
+            phone: lp.phone ? (lp.phone.startsWith('+91') ? lp.phone : `+91 ${lp.phone}`) : '+91 8766903403',
+            prakriti: lp.prakriti || lp.dosha || '⚡ Joint Mobility & Stamina Care Profile',
+            vikriti: lp.vikriti || 'Work-Stress & Mild Fatigue',
+            agni: lp.agribalam ? lp.agribalam.split(' ')[0] : 'Optimal',
+            nadi: 'Steady Rhythm (72 bpm)',
+            score: '96% Match',
+            date: 'Today',
+            time: '11:30 AM',
+            status: 'Active'
+          }];
+        }
+      }
+    } catch (e) {}
+    return [];
+  });
 
   // Recommendation History
-  const [recommendationHistoryList, setRecommendationHistoryList] = useState([
-    { id: 'REC-201', patient: 'Kiran Verma', doctor: 'Dr. Priya Sharma', formulation: 'Triphala Churna (3g) + Ashwagandha Arishta (15ml)', diet: 'Warm freshly prepared grains, ghee, avoid dry items', lifestyle: 'Abhyanga with sesame oil, Nadi Shodhana Pranayama', date: '03 Sep 2026', status: 'Active' },
-    { id: 'REC-202', patient: 'Aarav Patil', doctor: 'Dr. Rajesh Joshi', formulation: 'Avipattikar Churna (3g before meals) + Kamadudha Ras', diet: 'Cooling non-acidic wholesome meals, coconut water', lifestyle: 'Sheetali Pranayama, avoid midday sun exposure', date: '02 Sep 2026', status: 'Completed' },
-    { id: 'REC-203', patient: 'Neha Kulkarni', doctor: 'Dr. Bhupesh Indurkar', formulation: 'Trikatu Churna (1g with honey) + Kanchanar Guggulu', diet: 'Light warm barley soup, dry ginger tea, low dairy', lifestyle: 'Surya Namaskar 12 rounds, brisk morning walk', date: '01 Sep 2026', status: 'Ongoing' },
-    { id: 'REC-204', patient: 'Rohan Deshmukh', doctor: 'Dr. Ananya Deshmukh', formulation: 'Sitopaladi Churna (2g with ghee & honey) + Vasavaleha', diet: 'Warm turmeric milk with black pepper, hot liquids', lifestyle: 'Steam inhalation with eucalyptus, Kapalabhati', date: '31 Aug 2026', status: 'Completed' }
-  ]);
+  const [recommendationHistoryList, setRecommendationHistoryList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('zeniva_recommendations_history');
+      if (saved) return JSON.parse(saved);
+      const localPatStr = localStorage.getItem('zeniva_patient_user');
+      if (localPatStr) {
+        const lp = JSON.parse(localPatStr);
+        if (lp && lp.name && lp.name !== 'Guest Visitor') {
+          return [{
+            id: 'REC-201',
+            patient: lp.name,
+            doctor: 'Dr. Sohil Indurkar',
+            formulation: 'Triphala Churna (3g) + Ashwagandha Arishta (15ml)',
+            diet: lp.diet || 'Warm freshly prepared grains, ghee, avoid dry items',
+            lifestyle: 'Abhyanga with sesame oil, Nadi Shodhana Pranayama',
+            date: 'Today',
+            status: 'Active'
+          }];
+        }
+      }
+    } catch (e) {}
+    return [];
+  });
 
   // Doctor Availability & Schedule
   const [doctorAvailabilityList, setDoctorAvailabilityList] = useState([
@@ -590,7 +606,7 @@ export const AdminDashboard = ({
               location: p.location || p.city || 'Nagpur, Maharashtra',
               city: p.city || 'Nagpur',
               status: p.status || 'active',
-              avatar: p.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+              avatar: p.avatar_url && !p.avatar_url.includes('unsplash.com') ? p.avatar_url : '',
               created_at: p.created_at || new Date().toISOString()
             }));
           combinedPatients.push(...mapped);
@@ -606,15 +622,15 @@ export const AdminDashboard = ({
           const regList = JSON.parse(regListStr);
           if (Array.isArray(regList)) {
             regList.forEach(p => {
-              if (p && p.name) {
+              if (p && p.name && p.name !== 'Guest Visitor') {
                 const clPhone = p.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '';
                 if (!deletedPatIds.includes(p.id) && (!clPhone || !deletedPatIds.includes(clPhone))) {
                   combinedPatients.unshift({
                     id: p.id || `pat_${Date.now()}`,
                     name: p.name,
-                    phone: p.phone || '9876543210',
+                    phone: clPhone || p.phone || '',
                     email: p.email || '',
-                    age: p.age || '29',
+                    age: p.age || '25',
                     gender: p.gender || 'Patient',
                     prakriti: p.prakriti || p.dosha || '🌙 Stress & Sleep Wellness Profile',
                     vikriti: p.vikriti || 'Work-Stress Overthinking',
@@ -624,7 +640,7 @@ export const AdminDashboard = ({
                     location: p.city || p.location || 'Nagpur, Maharashtra',
                     city: p.city || 'Nagpur',
                     status: p.status || 'active',
-                    avatar: p.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+                    avatar: p.avatar && !p.avatar.includes('unsplash.com') ? p.avatar : '',
                     created_at: p.created_at || new Date().toISOString()
                   });
                 }
@@ -639,15 +655,15 @@ export const AdminDashboard = ({
         const localPatStr = localStorage.getItem('zeniva_patient_user');
         if (localPatStr) {
           const localPat = JSON.parse(localPatStr);
-          if (localPat && localPat.name) {
+          if (localPat && localPat.name && localPat.name !== 'Guest Visitor') {
             const clPhone = localPat.phone ? String(localPat.phone).replace(/\D/g, '').slice(-10) : '';
             if (!deletedPatIds.includes(localPat.id) && (!clPhone || !deletedPatIds.includes(clPhone))) {
               combinedPatients.unshift({
                 id: localPat.id || 'pat_local_active',
                 name: localPat.name,
-                phone: localPat.phone || '9876543210',
+                phone: clPhone || localPat.phone || '',
                 email: localPat.email || '',
-                age: localPat.age || '29',
+                age: localPat.age || '21',
                 gender: localPat.gender || 'Patient',
                 prakriti: localPat.prakriti || localPat.dosha || '🌙 Stress & Sleep Wellness Profile',
                 vikriti: localPat.vikriti || 'Work-Stress Overthinking',
@@ -657,7 +673,7 @@ export const AdminDashboard = ({
                 location: localPat.city || localPat.location || 'Nagpur, Maharashtra',
                 city: localPat.city || 'Nagpur',
                 status: localPat.status || 'active',
-                avatar: localPat.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+                avatar: localPat.avatar && !localPat.avatar.includes('unsplash.com') ? localPat.avatar : '',
                 created_at: new Date().toISOString()
               });
             }
@@ -677,25 +693,25 @@ export const AdminDashboard = ({
         }
       } catch (err) {}
 
-      // Deduplicate by phone or id or name
-      if (combinedPatients.length > 0) {
-        setPatientsList(prev => {
-          const seen = new Set();
-          const unique = [];
-          
-          [...combinedPatients, ...prev].forEach(p => {
-            if (!p) return;
-            const clPhone = p.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '';
-            if (deletedPatIds.includes(p.id) || (clPhone && deletedPatIds.includes(clPhone))) return;
-            const key = clPhone || p.id || (p.name && p.name.trim().toLowerCase());
-            if (key && !seen.has(key)) {
-              seen.add(key);
-              unique.push(p);
-            }
-          });
-          return unique;
+      // Deduplicate by phone or id or name - strictly exclude fake dummy patients
+      const FAKE_PATIENT_IDS = ['usr_patient_demo_01', 'usr_9876543210', 'usr_9822011223', 'usr_9833455667', 'usr_9844566778'];
+      setPatientsList(prev => {
+        const seen = new Set();
+        const unique = [];
+        
+        [...combinedPatients, ...prev].forEach(p => {
+          if (!p) return;
+          if (FAKE_PATIENT_IDS.includes(p.id)) return;
+          const clPhone = p.phone ? String(p.phone).replace(/\D/g, '').slice(-10) : '';
+          if (deletedPatIds.includes(p.id) || (clPhone && deletedPatIds.includes(clPhone))) return;
+          const key = clPhone || p.id || (p.name && p.name.trim().toLowerCase());
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            unique.push(p);
+          }
         });
-      }
+        return unique;
+      });
     } catch (err) {
       console.warn("Patient list sync notice:", err);
     }
@@ -980,7 +996,7 @@ export const AdminDashboard = ({
       event: 'Patient Health Assessment Completed',
       category: 'AI Assessment',
       actor: 'Zeniva AI Diagnostic Core',
-      user: 'usr_patient_demo_01',
+      user: 'usr_patient_active',
       ip: '127.0.0.1 (Localhost)',
       token: 'sha256_a10f92cd33b451',
       severity: 'Info',
@@ -2778,13 +2794,21 @@ export const AdminDashboard = ({
                   patientsList.filter(p => !patientSearch || p.name?.toLowerCase().includes(patientSearch.toLowerCase()) || p.phone?.includes(patientSearch)).map(pat => (
                     <tr key={pat.id} className="hover:bg-purple-50/20 transition-colors">
                       <td className="py-3 font-bold text-stone-900 flex items-center gap-3">
-                        <img 
-                          src={pat.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} 
-                          alt={pat.name} 
-                          className="w-9 h-9 rounded-full object-cover border border-purple-200 shadow-2xs shrink-0 cursor-pointer" 
-                          onClick={() => setInspectingPatient(pat)}
-                          onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'; }}
-                        />
+                        {pat.avatar && !pat.avatar.includes('unsplash.com') ? (
+                          <img 
+                            src={pat.avatar} 
+                            alt={pat.name} 
+                            className="w-9 h-9 rounded-full object-cover border border-purple-200 shadow-2xs shrink-0 cursor-pointer" 
+                            onClick={() => setInspectingPatient(pat)}
+                          />
+                        ) : (
+                          <div 
+                            onClick={() => setInspectingPatient(pat)}
+                            className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1C1030] to-[#4A267A] text-amber-300 font-serif font-black flex items-center justify-center border border-purple-200 shadow-2xs shrink-0 cursor-pointer text-xs"
+                          >
+                            {(pat.name || 'P').charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <p 
                             className="font-bold text-stone-900 hover:text-purple-800 cursor-pointer"
@@ -2795,7 +2819,9 @@ export const AdminDashboard = ({
                           <p className="text-[10px] text-stone-400 font-mono">{pat.id}</p>
                         </div>
                       </td>
-                      <td className="py-3 font-mono text-stone-600">+91 {pat.phone}</td>
+                      <td className="py-3 font-mono text-stone-600">
+                        {pat.phone ? (pat.phone.startsWith('+91') ? pat.phone : `+91 ${pat.phone}`) : '—'}
+                      </td>
                       <td className="py-3">
                         <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 text-[10px] font-bold">
                           {pat.prakriti || pat.specialization || 'Joint Mobility & Muscle Care'}
@@ -4281,12 +4307,17 @@ export const AdminDashboard = ({
 
             <div className="p-6 sm:p-8 overflow-y-auto space-y-6 text-xs font-sans">
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200">
-                <img 
-                  src={inspectingPatient.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} 
-                  alt={inspectingPatient.name} 
-                  className="w-16 h-16 rounded-full object-cover border-2 border-purple-300 shadow-sm shrink-0" 
-                  onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'; }}
-                />
+                {inspectingPatient.avatar && !inspectingPatient.avatar.includes('unsplash.com') ? (
+                  <img 
+                    src={inspectingPatient.avatar} 
+                    alt={inspectingPatient.name} 
+                    className="w-16 h-16 rounded-full object-cover border-2 border-purple-300 shadow-sm shrink-0" 
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1C1030] to-[#4A267A] text-amber-300 font-serif font-black flex items-center justify-center border-2 border-purple-300 shadow-sm shrink-0 text-xl">
+                    {(inspectingPatient.name || 'P').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-serif font-bold text-stone-900 truncate">{inspectingPatient.name}</h2>
@@ -4296,7 +4327,7 @@ export const AdminDashboard = ({
                   </div>
                   <p className="text-xs text-purple-900 font-semibold">{inspectingPatient.prakriti}</p>
                   <p className="text-[11px] font-mono text-stone-500">
-                    ID: {inspectingPatient.id} · Mobile: +91 {inspectingPatient.phone} · Age: {inspectingPatient.age || 21} Yrs ({inspectingPatient.gender || 'Male'})
+                    ID: {inspectingPatient.id} · Mobile: {inspectingPatient.phone ? (inspectingPatient.phone.startsWith('+91') ? inspectingPatient.phone : `+91 ${inspectingPatient.phone}`) : '—'} · Age: {inspectingPatient.age || 21} Yrs ({inspectingPatient.gender || 'Male'})
                   </p>
                 </div>
               </div>

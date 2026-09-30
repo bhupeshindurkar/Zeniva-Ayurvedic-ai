@@ -740,7 +740,7 @@ export const DoctorDashboard = ({
               visits: 1,
               lastVisit: 'Today',
               registeredAt: 'Today',
-              avatar: lp.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'
+              avatar: lp.avatar && !lp.avatar.includes('unsplash.com') ? lp.avatar : ''
             }];
           }
         }
@@ -793,7 +793,7 @@ export const DoctorDashboard = ({
             visits: 1,
             lastVisit: registeredDate,
             registeredAt: registeredDate,
-            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'
+            avatar: p.avatar_url && !p.avatar_url.includes('unsplash.com') ? p.avatar_url : ''
           });
         });
       }
@@ -834,7 +834,7 @@ export const DoctorDashboard = ({
                   visits: 1,
                   lastVisit: 'Today',
                   registeredAt: 'Today',
-                  avatar: lp.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'
+                  avatar: lp.avatar && !lp.avatar.includes('unsplash.com') ? lp.avatar : ''
                 });
               }
             }
@@ -2849,11 +2849,17 @@ export const DoctorDashboard = ({
                         <td className="p-3.5 font-mono font-bold text-purple-900">{p.id}</td>
                         <td className="p-3.5">
                           <div className="flex items-center gap-2.5">
-                            <img
-                              src={p.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'}
-                              alt={p.name}
-                              className="w-8 h-8 rounded-full object-cover border border-purple-200 shrink-0"
-                            />
+                            {p.avatar && !p.avatar.includes('unsplash.com') ? (
+                              <img
+                                src={p.avatar}
+                                alt={p.name}
+                                className="w-8 h-8 rounded-full object-cover border border-purple-200 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1C1030] to-[#4A267A] text-amber-300 font-serif font-black flex items-center justify-center border border-purple-200 shrink-0 text-xs">
+                                {(p.name || 'P').charAt(0).toUpperCase()}
+                              </div>
+                            )}
                             <div>
                               <span className="font-bold text-stone-900 block">{p.name}</span>
                               <span className="text-[10px] text-stone-400 font-medium">{p.email || 'No email registered'}</span>
