@@ -7,7 +7,7 @@ import {
   Layers, ChevronRight, Activity, ArrowUpRight, TrendingUp,
   Package, ShieldCheck, Check, Phone, MapPin, Receipt,
   BadgePercent, FileSpreadsheet, Send, ArrowRight, ArrowLeft, Lock,
-  Flame, Droplet, Wind, HeartPulse, UserCheck, Pill
+  Flame, Droplet, Wind, HeartPulse, UserCheck, Pill, HelpCircle, BookOpen, CheckCircle
 } from 'lucide-react';
 import { ZenivaLogo, MortarPestleGraphic } from '../components/ZenivaIcons';
 import { getApiUrl } from '../lib/api';
@@ -355,6 +355,7 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
   });
 
   // Daily Body Issues Form State
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isAddBodyIssueModalOpen, setIsAddBodyIssueModalOpen] = useState(false);
   const [viewingBodyIssue, setViewingBodyIssue] = useState(null);
   const [bodyIssueFilterSystem, setBodyIssueFilterSystem] = useState('all');
@@ -835,6 +836,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <span>+ Add Medicine</span>
               </button>
 
+              <button
+                onClick={() => setIsGuideModalOpen(true)}
+                className="px-3.5 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-purple-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                title="New User Guide: How Zeniva Hospital ERP Works"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-purple-300" />
+                <span className="hidden sm:inline">How ERP Works</span>
+              </button>
+
               <a
                 href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
                 download="Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
@@ -875,6 +885,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <span>+ New Invoice</span>
               </button>
 
+              <button
+                onClick={() => setIsGuideModalOpen(true)}
+                className="px-3.5 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-purple-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                title="New User Guide: How Zeniva Hospital ERP Works"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-purple-300" />
+                <span className="hidden sm:inline">How ERP Works</span>
+              </button>
+
               <a
                 href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
                 download="Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
@@ -903,6 +922,15 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                 <Lock className="w-3.5 h-3.5 text-amber-300" />
                 <span>Read-Only Preview Mode</span>
               </div>
+
+              <button
+                onClick={() => setIsGuideModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-purple-200 hover:text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                title="New User Guide: How Zeniva Hospital ERP Works"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-purple-300" />
+                <span>How ERP Works</span>
+              </button>
 
               <a
                 href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
@@ -2970,6 +2998,177 @@ export const HospitalErpView = ({ currentUser = {}, currentRole = 'public', onSe
                   <p className="text-[10px] text-stone-400">Chief Ayurvedic Consultant</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ============================================================== */}
+      {/* MODAL 6: HOW ERP WORKS - NEW USER COMPREHENSIVE GUIDE */}
+      {/* ============================================================== */}
+      {isGuideModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-stone-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#1C1030] via-[#35185A] to-[#1C1030] text-[#F3EED9] p-5 sm:p-6 rounded-t-3xl relative">
+              <button
+                onClick={() => setIsGuideModalOpen(false)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-stone-200 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                    <span>Zeniva Hospital ERP Guide</span>
+                    <span className="text-xs font-sans font-semibold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40">
+                      User Walkthrough
+                    </span>
+                  </h3>
+                  <p className="text-stone-300 text-xs mt-0.5">
+                    Ayurvedic Hospital Operating System (HOS) — Naye Users aur Doctors ke liye complete guide
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 sm:p-8 space-y-6 text-stone-800">
+              
+              {/* Card 1: What is ERP? */}
+              <div className="bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-teal-500/10 p-5 rounded-2xl border border-amber-200/80">
+                <h4 className="font-serif font-bold text-base text-purple-950 flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>1. ERP Kya Hai? (What is Zeniva Hospital ERP?)</span>
+                </h4>
+                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                  <strong>ERP (Enterprise Resource Planning)</strong> ek complete digital hospital management system hai jo kisi bhi Ayurvedic Clinic ya Hospital ke sabhi clinical, inventory aur billing kaamo ko bina kisi paper-work ke ek hi screen par jodta hai. Isme <strong>AYUSH & MCIM clinical standards</strong> ke mutabiq Rogi Pariksha, Dawa Stock, GST Bill aur Panchakarma ek click me manage hote hain.
+                </p>
+              </div>
+
+              {/* Card 2: User Roles */}
+              <div>
+                <h4 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2 mb-3">
+                  <UserCheck className="w-4 h-4 text-teal-700" />
+                  <span>2. Kis User Ko Kya Karna Hai? (User Roles & Access)</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1.5">
+                    <span className="font-bold text-purple-900 block text-sm">👑 Super Admin</span>
+                    <p className="text-stone-600">
+                      • Nayi Aushadhi inventory add karna<br />
+                      • Stock replenish aur price set karna<br />
+                      • Clinic turnover aur tax audit dekhna
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1.5">
+                    <span className="font-bold text-teal-800 block text-sm">🩺 Doctor / Vaidya</span>
+                    <p className="text-stone-600">
+                      • Daily Body Issue & Rogi Pariksha lena<br />
+                      • Dosha (Vata/Pitta/Kapha) & Agni diagnose karna<br />
+                      • Classical Treatment & Rogi Case Sheet banana
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1.5">
+                    <span className="font-bold text-amber-800 block text-sm">🧾 Front Desk / Billing</span>
+                    <p className="text-stone-600">
+                      • Computerized 5% GST Invoices generate karna<br />
+                      • Dawa sell karna (stock auto-deduct hota hai)<br />
+                      • Printable clinical receipt print karna
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Step-by-Step Workflow */}
+              <div>
+                <h4 className="font-serif font-bold text-base text-stone-900 flex items-center gap-2 mb-3">
+                  <Activity className="w-4 h-4 text-emerald-700" />
+                  <span>3. Ek Naye Patient Ki Complete Step-by-Step Journey (Daily Workflow)</span>
+                </h4>
+                
+                <div className="space-y-3 text-xs sm:text-sm">
+                  {/* Step 1 */}
+                  <div className="flex gap-3 items-start p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/80">
+                    <span className="w-6 h-6 rounded-full bg-teal-700 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                    <div className="space-y-1">
+                      <strong className="text-teal-950 font-bold block">Rogi Pariksha & Body Issue Record karein:</strong>
+                      <p className="text-stone-700 text-xs">
+                        Top header me <strong>"+ Log Body Issue"</strong> par click karein. Patient ka naam, body organ system (Spine, Gut, Sleep, Skin, etc.), Dosha imbalance (Vata, Pitta, Kapha) aur Agni status chunein. Save karne par patient ka <strong>Ayurvedic Rogi Case Sheet</strong> ban jayega jise aap print ya CSV me export kar sakte hain.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="flex gap-3 items-start p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80">
+                    <span className="w-6 h-6 rounded-full bg-purple-800 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                    <div className="space-y-1">
+                      <strong className="text-purple-950 font-bold block">Aushadhi Bhandar (Pharmacy Stock) check karein:</strong>
+                      <p className="text-stone-700 text-xs">
+                        <strong>"🌿 Aushadhi Bhandar"</strong> tab me sabhi classical dawaiyon (Churna, Vati, Taila, Asava/Arishta) ka live stock, batch number, expiry date aur rack location dikhta hai. Agar dawa kam hai toh "Low Stock" badge alert deta hai.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="flex gap-3 items-start p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+                    <span className="w-6 h-6 rounded-full bg-amber-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                    <div className="space-y-1">
+                      <strong className="text-amber-950 font-bold block">Computerized 5% GST Invoice banayein:</strong>
+                      <p className="text-stone-700 text-xs">
+                        Header me <strong>"+ New Invoice"</strong> dabayein. Patient ka naam dalein, consultation fee aur prescribed dawaiyan select karein. System automatically 2.5% CGST + 2.5% SGST jod kar digital bill bana deta hai aur inventory se dawa minus kar deta hai. Invoice ko turant print karke patient ko diya ja sakta hai.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="flex gap-3 items-start p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80">
+                    <span className="w-6 h-6 rounded-full bg-blue-700 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">4</span>
+                    <div className="space-y-1">
+                      <strong className="text-blue-950 font-bold block">Panchakarma & IPD Bed Allocation:</strong>
+                      <p className="text-stone-700 text-xs">
+                        Agar patient ko Shirodhara, Janu Basti ya Swedana ki zaroorat hai toh <strong>"Panchakarma Scheduler"</strong> me date aur therapist allocate karein. IPD admission ke liye <strong>"IPD Wards & Beds"</strong> tab se Deluxe Cottage ya Care Suite allot karein aur unka Sattvic Ahara schedule set karein.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 5 */}
+                  <div className="flex gap-3 items-start p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80">
+                    <span className="w-6 h-6 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">5</span>
+                    <div className="space-y-1">
+                      <strong className="text-emerald-950 font-bold block">Clinic Analytics & CSV Export:</strong>
+                      <p className="text-stone-700 text-xs">
+                        <strong>"📊 Clinic Analytics"</strong> tab me revenue, bed occupancy, aur inventory valuation check karein. Rogi tracker data ko <strong>"Export CSV"</strong> button se ek click me Excel sheet me download kar sakte hain.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons in Modal Footer */}
+              <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <a
+                  href="/Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                  download="Zeniva_Ayurvedic_Hospital_ERP_Summary.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-900 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
+                >
+                  <FileText className="w-4 h-4 text-amber-700" />
+                  <span>Download Complete ERP Architecture PDF</span>
+                </a>
+
+                <button
+                  onClick={() => setIsGuideModalOpen(false)}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#1C1030] hover:bg-[#2c1a4d] text-white font-bold text-xs shadow-md cursor-pointer transition-all"
+                >
+                  Samajh Aa Gaya / Start Using ERP →
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
