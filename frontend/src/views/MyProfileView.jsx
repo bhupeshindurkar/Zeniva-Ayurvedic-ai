@@ -17,12 +17,34 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
     ? 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400' 
     : '';
 
-  // Form State initialized strictly with logged-in user data
-  const [profileData, setProfileData] = useState({
+  // Helper to determine if an avatar string is a real custom uploaded photo (not generic stock placeholder)
+  const isRealCustomAvatar = (url) => {
+    return !!(url && typeof url === 'string' && url.length > 20 && !url.includes('unsplash.com'));
+  };
+
+  // Helper to resolve active avatar with strict priority:
+  // 1. currentUser.avatar (if real custom)
+  // 2. localStorage zeniva_patient_avatar (if real custom)
+  // 3. Fallback
+  const getResolvedAvatar = (user = currentUser) => {
+    if (isRealCustomAvatar(user?.avatar)) return user.avatar;
+    if (typeof localStorage !== 'undefined') {
+      const cleanP = (user?.phone || '').replace(/\D/g, '').slice(-10);
+      const phoneCached = cleanP ? localStorage.getItem(`zeniva_patient_avatar_${cleanP}`) : null;
+      if (isRealCustomAvatar(phoneCached)) return phoneCached;
+      const genericCached = localStorage.getItem('zeniva_patient_avatar');
+      if (isRealCustomAvatar(genericCached)) return genericCached;
+    }
+    if (user?.avatar && !user.avatar.includes('unsplash.com')) return user.avatar;
+    return defaultAvatar;
+  };
+
+  // Form State initialized strictly with logged-in user data & real avatar
+  const [profileData, setProfileData] = useState(() => ({
     name: currentUser.name || '',
     phone: currentUser.phone || '',
-    age: currentUser.age || 25,
-    gender: currentUser.gender || 'Female',
+    age: currentUser.age || 21,
+    gender: currentUser.gender || 'Male',
     email: currentUser.email || '',
     location: currentUser.location || currentUser.city || '',
     prakriti: currentUser.prakriti || 'Stress & Sleep Wellness Profile',
@@ -30,26 +52,27 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
     bloodGroup: currentUser.blood_group || currentUser.bloodGroup || 'B+',
     diet: currentUser.diet || 'Vegan Whole Plant Foods',
     agribalam: currentUser.agribalam || 'Madhyama Agni (Moderate Digestion)',
-    avatar: currentUser.avatar || defaultAvatar
-  });
+    avatar: getResolvedAvatar(currentUser)
+  }));
 
   useEffect(() => {
-    if (currentUser && (currentUser.name || currentUser.email)) {
-      const cachedAvatar = typeof localStorage !== 'undefined' ? localStorage.getItem('zeniva_patient_avatar') : null;
-      setProfileData({
-        name: currentUser.name || '',
-        phone: currentUser.phone || '',
-        email: currentUser.email || '',
-        location: currentUser.location || currentUser.city || '',
-        diet: currentUser.diet || 'Vegan Whole Plant Foods',
-        age: currentUser.age || 25,
-        gender: currentUser.gender || 'Female',
-        prakriti: currentUser.prakriti || 'Stress & Sleep Wellness Profile',
-        vikriti: currentUser.vikriti || '',
-        bloodGroup: currentUser.blood_group || currentUser.bloodGroup || 'B+',
-        agribalam: currentUser.agribalam || 'Madhyama Agni (Moderate Digestion)',
-        avatar: cachedAvatar || currentUser.avatar || defaultAvatar
-      });
+    if (currentUser && (currentUser.name || currentUser.email || currentUser.phone || currentUser.avatar)) {
+      const resolved = getResolvedAvatar(currentUser);
+      setProfileData(prev => ({
+        ...prev,
+        name: currentUser.name || prev.name,
+        phone: currentUser.phone || prev.phone,
+        email: currentUser.email || prev.email,
+        location: currentUser.location || currentUser.city || prev.location,
+        diet: currentUser.diet || prev.diet,
+        age: currentUser.age || prev.age,
+        gender: currentUser.gender || prev.gender,
+        prakriti: currentUser.prakriti || prev.prakriti,
+        vikriti: currentUser.vikriti || prev.vikriti,
+        bloodGroup: currentUser.blood_group || currentUser.bloodGroup || prev.bloodGroup,
+        agribalam: currentUser.agribalam || prev.agribalam,
+        avatar: resolved || (isRealCustomAvatar(prev.avatar) ? prev.avatar : '')
+      }));
     }
   }, [currentUser]);
 
@@ -59,12 +82,20 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
     const cleanEmail = (profileData.email || currentUser.email || '').trim().toLowerCase();
     const userId = currentUser.id || '';
 
+    // If currentUser already has a real custom avatar, make sure it is saved in localStorage
+    if (isRealCustomAvatar(currentUser?.avatar)) {
+      localStorage.setItem('zeniva_patient_avatar', currentUser.avatar);
+      if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, currentUser.avatar);
+      setProfileData(prev => ({ ...prev, avatar: currentUser.avatar }));
+      return;
+    }
+
     // 1. Supabase Profiles & Auth Metadata
     if (supabase) {
       // Check auth user metadata first
       supabase.auth.getUser().then(({ data }) => {
         const authAvatar = data?.user?.user_metadata?.avatar_url;
-        if (authAvatar && authAvatar.length > 20) {
+        if (isRealCustomAvatar(authAvatar)) {
           setProfileData(prev => ({ ...prev, avatar: authAvatar }));
           localStorage.setItem('zeniva_patient_avatar', authAvatar);
           if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, authAvatar);
@@ -82,10 +113,12 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
       }
 
       query.limit(1).then(({ data }) => {
-        if (data && data[0]?.avatar_url && data[0].avatar_url.length > 20) {
-          setProfileData(prev => ({ ...prev, avatar: data[0].avatar_url }));
-          localStorage.setItem('zeniva_patient_avatar', data[0].avatar_url);
-          if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, data[0].avatar_url);
+        const cloudAvatar = data?.[0]?.avatar_url;
+        // CRITICAL: NEVER overwrite user avatar with unsplash stock photos!
+        if (isRealCustomAvatar(cloudAvatar)) {
+          setProfileData(prev => ({ ...prev, avatar: cloudAvatar }));
+          localStorage.setItem('zeniva_patient_avatar', cloudAvatar);
+          if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, cloudAvatar);
         }
       }).catch(() => {});
 
@@ -102,7 +135,7 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
             if (data && data.length > 0 && data[0].review_notes) {
               try {
                 const cloudP = JSON.parse(data[0].review_notes);
-                if (cloudP?.avatar && (cloudP.avatar.startsWith('data:image') || cloudP.avatar.startsWith('http'))) {
+                if (isRealCustomAvatar(cloudP?.avatar)) {
                   setProfileData(prev => ({ ...prev, avatar: cloudP.avatar }));
                   localStorage.setItem('zeniva_patient_avatar', cloudP.avatar);
                   if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, cloudP.avatar);
@@ -121,7 +154,7 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
         .then(res => res.json())
         .then(data => {
           const userObj = data?.user || data?.patient;
-          if (userObj?.avatar && userObj.avatar.length > 20) {
+          if (isRealCustomAvatar(userObj?.avatar)) {
             setProfileData(prev => ({ ...prev, avatar: userObj.avatar }));
             localStorage.setItem('zeniva_patient_avatar', userObj.avatar);
             if (cleanP) localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, userObj.avatar);
@@ -129,7 +162,7 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
         })
         .catch(() => {});
     }
-  }, [profileData.phone, currentUser.phone, profileData.email, currentUser.email, currentUser.id]);
+  }, [currentUser?.id, currentUser?.phone, currentUser?.avatar]);
 
   // Clean 10-digit number display
   const rawPhone = (profileData.phone || currentUser.phone || '').replace(/\D/g, '').slice(-10);
@@ -218,41 +251,71 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
     } catch (backendErr) {}
   };
 
-  // Real Photo Upload Handler
+  // Real Photo Upload Handler with automatic Canvas Compression (crisp, fast, reliable)
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Url = reader.result;
-        const cleanP = rawPhone || (currentUser.phone ? currentUser.phone.replace(/\D/g, '').slice(-10) : '');
-        const updatedUser = {
-          ...currentUser,
-          ...profileData,
-          avatar: base64Url,
-          phone: cleanP || rawPhone,
-          role: currentUser.role || 'patient'
-        };
-        setProfileData(prev => ({ ...prev, avatar: base64Url }));
-        onUpdateUser(updatedUser);
-        try {
-          localStorage.setItem('zeniva_patient_avatar', base64Url);
-          localStorage.setItem('zeniva_current_user', JSON.stringify(updatedUser));
-          if (cleanP) {
-            localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, base64Url);
-          }
-          if (updatedUser.role === 'doctor') {
-            localStorage.setItem('zeniva_doctor_user', JSON.stringify(updatedUser));
-            localStorage.setItem('zeniva_registered_doctor', JSON.stringify(updatedUser));
+      reader.onload = (uploadEvent) => {
+        const img = new Image();
+        img.onload = async () => {
+          // Compress into square canvas (360x360, 85% JPEG)
+          const canvas = document.createElement('canvas');
+          const maxDim = 360;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
           } else {
-            localStorage.setItem('zeniva_patient_user', JSON.stringify(updatedUser));
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
           }
-          window.dispatchEvent(new CustomEvent('zeniva_patient_avatar_updated', { detail: base64Url }));
-          window.dispatchEvent(new CustomEvent('zeniva_patient_profile_updated', { detail: updatedUser }));
-        } catch (err) {}
-        await syncProfileRemotely(updatedUser);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 2500);
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+          const cleanP = rawPhone || (currentUser.phone ? currentUser.phone.replace(/\D/g, '').slice(-10) : '');
+          const updatedUser = {
+            ...currentUser,
+            ...profileData,
+            avatar: compressedDataUrl,
+            phone: cleanP || rawPhone,
+            role: currentUser.role || 'patient'
+          };
+          // 1. Immediately update center profile card
+          setProfileData(prev => ({ ...prev, avatar: compressedDataUrl }));
+          // 2. Immediately update Header top-right corner & App state
+          onUpdateUser(updatedUser);
+
+          try {
+            localStorage.setItem('zeniva_patient_avatar', compressedDataUrl);
+            localStorage.setItem('zeniva_current_user', JSON.stringify(updatedUser));
+            if (cleanP) {
+              localStorage.setItem(`zeniva_patient_avatar_${cleanP}`, compressedDataUrl);
+            }
+            if (updatedUser.role === 'doctor') {
+              localStorage.setItem('zeniva_doctor_user', JSON.stringify(updatedUser));
+              localStorage.setItem('zeniva_registered_doctor', JSON.stringify(updatedUser));
+            } else {
+              localStorage.setItem('zeniva_patient_user', JSON.stringify(updatedUser));
+            }
+            window.dispatchEvent(new CustomEvent('zeniva_patient_avatar_updated', { detail: compressedDataUrl }));
+            window.dispatchEvent(new CustomEvent('zeniva_patient_profile_updated', { detail: updatedUser }));
+          } catch (err) {}
+
+          await syncProfileRemotely(updatedUser);
+          setSaveSuccess(true);
+          setTimeout(() => setSaveSuccess(false), 2500);
+        };
+        img.src = uploadEvent.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -328,7 +391,13 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
           
           {/* Interactive Profile Photo Container with Upload Trigger */}
           <div className="relative group">
-            {profileData.avatar ? (
+            {(isRealCustomAvatar(profileData.avatar) || isRealCustomAvatar(currentUser?.avatar)) ? (
+              <img
+                src={isRealCustomAvatar(profileData.avatar) ? profileData.avatar : currentUser.avatar}
+                alt={profileData.name || 'User'}
+                className="w-32 h-32 rounded-3xl object-cover border-4 border-[#FAF7F2] shadow-md transition-all group-hover:brightness-90"
+              />
+            ) : profileData.avatar && !profileData.avatar.includes('unsplash.com') ? (
               <img
                 src={profileData.avatar}
                 alt={profileData.name || 'User'}
@@ -337,10 +406,15 @@ export const MyProfileView = ({ currentUser = {}, onUpdateUser = () => {} }) => 
             ) : (
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-32 h-32 rounded-3xl bg-gradient-to-br from-stone-100 to-stone-200 border-4 border-[#FAF7F2] shadow-md flex flex-col items-center justify-center text-stone-400 cursor-pointer hover:bg-stone-200 transition-colors"
+                className="w-32 h-32 rounded-3xl bg-gradient-to-br from-[#1C1030] to-[#3B1F6E] border-4 border-[#FAF7F2] shadow-md flex flex-col items-center justify-center text-white cursor-pointer hover:opacity-95 transition-all p-3"
               >
-                <User className="w-12 h-12 mb-1 text-stone-400" />
-                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Upload Photo</span>
+                <div className="w-14 h-14 rounded-full bg-white/15 border border-white/20 flex items-center justify-center mb-1 text-2xl font-serif font-black text-amber-300 shadow-inner">
+                  {(profileData.name || currentUser.name || 'P').charAt(0).toUpperCase()}
+                </div>
+                <span className="text-[10px] font-bold text-amber-200 uppercase tracking-wider flex items-center gap-1">
+                  <Camera className="w-3 h-3 text-amber-300" />
+                  <span>Upload Photo</span>
+                </span>
               </div>
             )}
             

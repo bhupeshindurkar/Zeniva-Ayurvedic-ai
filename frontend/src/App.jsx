@@ -325,9 +325,13 @@ export default function App() {
               const cachedAvatar = typeof localStorage !== 'undefined' 
                 ? (localStorage.getItem('zeniva_patient_avatar') || (cleanPatP ? localStorage.getItem(`zeniva_patient_avatar_${cleanPatP}`) : null))
                 : null;
+              const isReal = (u) => u && typeof u === 'string' && u.length > 20 && !u.includes('unsplash.com');
+              const finalAvatar = isReal(cachedAvatar) 
+                ? cachedAvatar 
+                : (isReal(parsed.avatar) ? parsed.avatar : (parsed.avatar && !parsed.avatar.includes('unsplash.com') ? parsed.avatar : ''));
               return {
                 ...parsed,
-                avatar: cachedAvatar || parsed.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+                avatar: finalAvatar,
                 role: 'patient',
                 isLoggedIn: parsed.isLoggedIn ?? true
               };
@@ -542,9 +546,15 @@ export default function App() {
               diet: profile?.diet || localPat.diet || 'Vegan Whole Plant Foods',
               agribalam: profile?.agribalam || localPat.agribalam || 'Madhyama Agni (Moderate Digestion)',
               vikriti: profile?.vikriti || localPat.vikriti || '',
-              avatar: (profile?.avatar_url && profile.avatar_url.length > 20) 
+              avatar: (profile?.avatar_url && profile.avatar_url.length > 20 && !profile.avatar_url.includes('unsplash.com')) 
                 ? profile.avatar_url 
-                : (session.user.user_metadata?.avatar_url || (typeof localStorage !== 'undefined' && localStorage.getItem('zeniva_patient_avatar')) || localPat.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'),
+                : (session.user.user_metadata?.avatar_url && !session.user.user_metadata.avatar_url.includes('unsplash.com'))
+                  ? session.user.user_metadata.avatar_url
+                  : (typeof localStorage !== 'undefined' && localStorage.getItem('zeniva_patient_avatar') && !localStorage.getItem('zeniva_patient_avatar').includes('unsplash.com'))
+                    ? localStorage.getItem('zeniva_patient_avatar')
+                    : (localPat.avatar && !localPat.avatar.includes('unsplash.com'))
+                      ? localPat.avatar
+                      : (currentUser?.avatar && !currentUser.avatar.includes('unsplash.com') ? currentUser.avatar : ''),
               status: profile?.status || localPat.status || 'active',
               isLoggedIn: true,
               isRegistered: true,
