@@ -8,6 +8,7 @@ import {
   Mail, HelpCircle, Headphones, Briefcase, Phone, X
 } from 'lucide-react';
 import { ZenivaLogo, MeditatingYogi, InstagramIcon } from './ZenivaIcons';
+import { useHospitalErp } from '../config/features';
 
 export const Sidebar = ({ 
   currentRole = 'patient', // 'patient' | 'doctor' | 'admin' | 'public'
@@ -21,6 +22,7 @@ export const Sidebar = ({
   isOpenMobile = false,
   onCloseMobile = () => {}
 }) => {
+  const [showHospitalErp] = useHospitalErp();
   const [breathPhase, setBreathPhase] = useState('Inhale (स्वास 4s)');
 
   useEffect(() => {
@@ -164,7 +166,7 @@ export const Sidebar = ({
 
     { id: 'admin_notifications', label: 'Notifications', icon: Bell, type: 'single' },
     { id: 'admin_analytics', label: 'Reports', icon: FileBarChart, type: 'single' },
-    { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database, type: 'single' },
+    ...(showHospitalErp ? [{ id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database, type: 'single' }] : []),
     { id: 'admin_security', label: 'Security & Audit', icon: ShieldAlert, type: 'single' },
     { id: 'insights', label: 'System Insights & Poster', icon: Award, type: 'single' },
     { id: 'admin_settings', label: 'Settings', icon: Settings, type: 'single' },
@@ -202,7 +204,7 @@ export const Sidebar = ({
       type: 'section',
       title: 'MANAGE',
       items: [
-        { id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database },
+        ...(showHospitalErp ? [{ id: 'hospital_erp', label: 'Hospital ERP & Pharmacy', icon: Database }] : []),
         { id: 'doc_appointments', label: 'Appointments', icon: Calendar },
         { id: 'doc_patients', label: 'Patients', icon: Users },
         { id: 'doc_consultations', label: 'Consultations', icon: Stethoscope },

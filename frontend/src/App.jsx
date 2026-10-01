@@ -22,6 +22,7 @@ import { TeamContributorsView } from './views/TeamContributorsView';
 import { OpportunitiesView } from './views/OpportunitiesView';
 import { HospitalErpView } from './views/HospitalErpView';
 import { ContactUsView } from './views/ContactUsView';
+import { useHospitalErp, isHospitalErpEnabled } from './config/features';
 import { PatientAuthModal } from './components/PatientAuthModal';
 import { AppointmentModal } from './components/AppointmentModal';
 import { QuickScanModal } from './components/QuickScanModal';
@@ -198,7 +199,7 @@ const parseUrlState = () => {
     };
   }
 
-  if (hash === 'erp' || hash === 'hospital_erp' || hash === 'hospital-erp') {
+  if (isHospitalErpEnabled() && (hash === 'erp' || hash === 'hospital_erp' || hash === 'hospital-erp')) {
     return {
       role: 'public',
       authView: 'authenticated',
@@ -269,6 +270,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(initialState.tab);
   const [loginRoleTarget, setLoginRoleTarget] = useState(() => initialState.loginRoleTarget || 'doctor');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showHospitalErp] = useHospitalErp();
 
   // Modals
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
@@ -1029,7 +1031,7 @@ export default function App() {
 
         {/* Views Router */}
         <main className="flex-1">
-          {activeTab === 'hospital_erp' || activeTab === 'erp' ? (
+          {showHospitalErp && (activeTab === 'hospital_erp' || activeTab === 'erp') ? (
             <HospitalErpView
               currentUser={currentUser}
               currentRole={currentRole}

@@ -16,6 +16,7 @@ import {
 import { MeditatingYogi, MortarPestleGraphic, ZenivaLogo } from '../components/ZenivaIcons';
 import { getTeamData, fetchRemoteTeamData, saveTeamData, resetTeamData } from '../data/teamData';
 import { supabase } from '../lib/supabase';
+import { useHospitalErp } from '../config/features';
 
 export const AdminDashboard = ({
   activeTab = 'admin_dashboard',
@@ -25,6 +26,9 @@ export const AdminDashboard = ({
   onSelectTab = () => {},
   onLockAdmin = () => {}
 }) => {
+  // Hospital ERP Real-time ON / OFF Toggle Switch
+  const [isErpEnabled, toggleErp] = useHospitalErp();
+
   // Toast Alert Notification
   const [toastMessage, setToastMessage] = useState('');
   const [isPdfReportModalOpen, setIsPdfReportModalOpen] = useState(false);
@@ -1834,6 +1838,30 @@ export const AdminDashboard = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Hospital ERP Module Interactive ON / OFF Toggle Switch */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-50 border border-purple-200 shadow-2xs">
+              <Database className="w-3.5 h-3.5 text-purple-700" />
+              <div className="text-left">
+                <p className="text-[9px] font-bold text-purple-900 uppercase leading-none">Hospital ERP</p>
+                <span className={`text-[10px] font-extrabold ${isErpEnabled ? 'text-emerald-700' : 'text-stone-500'}`}>
+                  {isErpEnabled ? 'Status: ON' : 'Status: OFF'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextState = toggleErp();
+                  showToast(nextState ? '✓ Hospital ERP is now turned ON (Visible in Overview & Menus)' : '✓ Hospital ERP is now turned OFF (Hidden from Overview & Public)');
+                }}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${isErpEnabled ? 'bg-emerald-600' : 'bg-stone-300'}`}
+                title={isErpEnabled ? 'Click to turn Hospital ERP OFF' : 'Click to turn Hospital ERP ON'}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${isErpEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                />
+              </button>
+            </div>
+
             {/* Confidential Admin Project PPT Download */}
             <a
               href="/zeniva_presentation.pptx"
@@ -1909,41 +1937,75 @@ export const AdminDashboard = ({
       {activeTab === 'admin_dashboard' && (
         <div className="space-y-6">
           
-          {/* Zeniva Ayurvedic Hospital ERP & Pharmacy Operations Banner (Super Admin Master Suite) */}
-          <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#1C1030] via-[#2A1647] to-[#1C1030] p-5 sm:p-6 text-white border border-[#482878]/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-inner">
-                <Database className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold tracking-wider uppercase font-mono">
-                    Super Admin Master Access
-                  </span>
-                  <span className="text-stone-300 text-xs flex items-center gap-1 font-mono">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Full Hospital Suite
-                  </span>
+          {/* Zeniva Ayurvedic Hospital ERP & Pharmacy Operations Banner (Super Admin Master Suite - PRESERVED) */}
+          {isErpEnabled ? (
+            <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#1C1030] via-[#2A1647] to-[#1C1030] p-5 sm:p-6 text-white border border-[#482878]/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 animate-in fade-in">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-inner">
+                  <Database className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-bold font-serif text-[#F3EED9] mt-1">
-                  Hospital ERP, Pharmacy Inventory & IPD Management
-                </h3>
-                <p className="text-xs text-stone-300 max-w-xl mt-0.5 leading-relaxed">
-                  Super Admin direct governance of Classical Medicine stock, Computerized GST Invoices, Panchakarma schedules & IPD Bed occupancy.
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold tracking-wider uppercase font-mono">
+                      Super Admin Master Access
+                    </span>
+                    <span className="text-stone-300 text-xs flex items-center gap-1 font-mono">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Full Hospital Suite (Live)
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold font-serif text-[#F3EED9] mt-1">
+                    Hospital ERP, Pharmacy Inventory & IPD Management
+                  </h3>
+                  <p className="text-xs text-stone-300 max-w-xl mt-0.5 leading-relaxed">
+                    Super Admin direct governance of Classical Medicine stock, Computerized GST Invoices, Panchakarma schedules & IPD Bed occupancy.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+                <button
+                  type="button"
+                  onClick={() => onSelectTab('hospital_erp')}
+                  className="w-full md:w-auto px-6 py-3 rounded-2xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                >
+                  <Database className="w-4 h-4 text-stone-950" />
+                  <span>Open Hospital ERP Suite</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+          ) : (
+            <div className="p-4 sm:p-5 rounded-3xl bg-white border border-[#EBE3D5] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-stone-100 text-stone-500 flex items-center justify-center shrink-0 border border-stone-200">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[10px] font-bold border border-stone-200 uppercase">
+                      ERP Module Hidden (OFF)
+                    </span>
+                    <span className="text-[11px] text-stone-400 font-mono">100% Code & Data Preserved</span>
+                  </div>
+                  <p className="font-serif font-bold text-stone-800 text-sm mt-0.5">
+                    Zeniva Hospital ERP & Pharmacy Operations
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    The ERP system is safely stored and hidden from the public overview and menus. Click "Turn ON" whenever you wish to showcase or use it.
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => onSelectTab('hospital_erp')}
-                className="w-full md:w-auto px-6 py-3 rounded-2xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                onClick={() => {
+                  toggleErp(true);
+                  showToast('✓ Hospital ERP is now turned ON (Visible in Overview & Menus)');
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs cursor-pointer transition-all shrink-0 active:scale-95"
               >
-                <Database className="w-4 h-4 text-stone-950" />
-                <span>Open Hospital ERP Suite</span>
-                <ArrowRight className="w-4 h-4" />
+                Turn ERP ON
               </button>
             </div>
-          </div>
+          )}
 
           {/* Quick Actions Panel */}
           <div className="bg-white rounded-3xl p-6 border border-[#EBE3D5] shadow-xs space-y-4">
@@ -1956,19 +2018,41 @@ export const AdminDashboard = ({
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <button
-                type="button"
-                onClick={() => onSelectTab('hospital_erp')}
-                className="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-left transition-all cursor-pointer flex items-center gap-3 group shadow-xs"
+              {isErpEnabled && (
+                <button
+                  type="button"
+                  onClick={() => onSelectTab('hospital_erp')}
+                  className="p-3.5 rounded-2xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-left transition-all cursor-pointer flex items-center gap-3 group shadow-xs animate-in fade-in"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Database className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-amber-950 text-xs">Hospital ERP & Pharmacy</p>
+                    <span className="text-[10px] text-amber-800">Inventory & Billing</span>
+                  </div>
+                </button>
+              )}
+
+              {/* ERP Master Toggle Quick Card */}
+              <div
+                onClick={() => {
+                  const next = toggleErp();
+                  showToast(next ? '✓ Hospital ERP is now turned ON!' : '✓ Hospital ERP is now turned OFF!');
+                }}
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-3 group shadow-xs active:scale-95 ${isErpEnabled ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300' : 'bg-stone-50 hover:bg-stone-100 border-stone-300'}`}
+                title="Toggle Hospital ERP visibility platform-wide"
               >
-                <div className="w-9 h-9 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform ${isErpEnabled ? 'bg-emerald-200 text-emerald-900' : 'bg-stone-200 text-stone-600'}`}>
                   <Database className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="font-bold text-amber-950 text-xs">Hospital ERP & Pharmacy</p>
-                  <span className="text-[10px] text-amber-800">Inventory & Billing</span>
+                  <p className="font-bold text-stone-900 text-xs">ERP Module Switch</p>
+                  <span className={`text-[10px] font-bold ${isErpEnabled ? 'text-emerald-700' : 'text-stone-500'}`}>
+                    {isErpEnabled ? '● Currently ON (Click OFF)' : '○ Currently OFF (Click ON)'}
+                  </span>
                 </div>
-              </button>
+              </div>
 
               <button
                 type="button"

@@ -14,6 +14,7 @@ import {
 import { MortarPestleGraphic, ZenivaLogo } from '../components/ZenivaIcons';
 import { supabase } from '../lib/supabase';
 import { getApiUrl } from '../lib/api';
+import { useHospitalErp } from '../config/features';
 
 export const DoctorDashboard = ({
   activeTab = 'home',
@@ -27,6 +28,7 @@ export const DoctorDashboard = ({
   onOpenLogin,
   onLogout
 }) => {
+  const [showHospitalErp] = useHospitalErp();
   const currentUser = rawCurrentUser || {};
 
   // Toast Alert Notification
@@ -1413,40 +1415,42 @@ export const DoctorDashboard = ({
       {isMainDashboard && (
         <div className="space-y-6 animate-in fade-in duration-200">
           
-          {/* Zeniva Ayurvedic Hospital ERP & Pharmacy Quick Access Banner */}
-          <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#1C1030] via-[#2A1647] to-[#1C1030] p-5 sm:p-6 text-white border border-[#482878]/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-inner">
-                <Database className="w-7 h-7" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold tracking-wider uppercase">
-                    Full Hospital Suite
-                  </span>
-                  <span className="text-stone-300 text-xs flex items-center gap-1 font-mono">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Live SQLite & Cloud Sync
-                  </span>
+          {/* Zeniva Ayurvedic Hospital ERP & Pharmacy Quick Access Banner (PRESERVED) */}
+          {showHospitalErp && (
+            <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-[#1C1030] via-[#2A1647] to-[#1C1030] p-5 sm:p-6 text-white border border-[#482878]/60 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-inner">
+                  <Database className="w-7 h-7" />
                 </div>
-                <h3 className="text-lg font-bold font-serif text-[#F3EED9] mt-1">
-                  Zeniva Ayurvedic Hospital ERP & Aushadhi Pharmacy
-                </h3>
-                <p className="text-xs text-stone-300 max-w-xl mt-0.5 leading-relaxed">
-                  Real-time Aushadhi Stock Inventory, Automated GST Invoicing, Panchakarma Therapy Scheduler & IPD Ward Bed Management.
-                </p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold tracking-wider uppercase">
+                      Full Hospital Suite
+                    </span>
+                    <span className="text-stone-300 text-xs flex items-center gap-1 font-mono">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Live SQLite & Cloud Sync
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold font-serif text-[#F3EED9] mt-1">
+                    Zeniva Ayurvedic Hospital ERP & Aushadhi Pharmacy
+                  </h3>
+                  <p className="text-xs text-stone-300 max-w-xl mt-0.5 leading-relaxed">
+                    Real-time Aushadhi Stock Inventory, Automated GST Invoicing, Panchakarma Therapy Scheduler & IPD Ward Bed Management.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
+                <button
+                  onClick={() => onSelectTab('hospital_erp')}
+                  className="w-full md:w-auto px-6 py-3 rounded-2xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
+                >
+                  <Database className="w-4 h-4 text-stone-950" />
+                  <span>Launch Hospital ERP</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto">
-              <button
-                onClick={() => onSelectTab('hospital_erp')}
-                className="w-full md:w-auto px-6 py-3 rounded-2xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-[1.02]"
-              >
-                <Database className="w-4 h-4 text-stone-950" />
-                <span>Launch Hospital ERP</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* --------------------------------------------------------------------- */}
           {/* Top 4 KPI Stat Cards                                                  */}
