@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldAlert, ShieldCheck, Lock, Unlock, KeyRound, Eye, EyeOff, 
   ArrowLeft, Fingerprint, AlertTriangle, CheckCircle2, Sparkles, Server
 } from 'lucide-react';
 import { ZenivaLogo } from '../components/ZenivaIcons';
+import { verifyAdminPassword, fetchAdminSecurityConfig } from '../lib/adminAuthService';
 
 export const AdminSecurityGatekeeper = ({
   targetTab = 'admin_dashboard',
@@ -17,16 +18,12 @@ export const AdminSecurityGatekeeper = ({
   const [isBiometricScanning, setIsBiometricScanning] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
 
-  // Authorized Master Admin Passcodes / PINs
-  const VALID_KEYS = [
-    'admin@zeniva2026',
-    'zeniva2026',
-    '8766',
-    '2027',
-    '8766903403'
-  ];
+  useEffect(() => {
+    // Pre-fetch latest cloud config on load
+    fetchAdminSecurityConfig();
+  }, []);
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e?.preventDefault();
     const clean = passcode.trim();
 
@@ -38,16 +35,20 @@ export const AdminSecurityGatekeeper = ({
     setIsVerifying(true);
     setError('');
 
-    setTimeout(() => {
-      if (VALID_KEYS.includes(clean)) {
-        grantAccess('Master Passcode Verified');
+    try {
+      const isValid = await verifyAdminPassword(clean);
+      if (isValid) {
+        grantAccess('Cloud-Synced Master Passcode Verified');
       } else {
         const nextAttempts = failedAttempts + 1;
         setFailedAttempts(nextAttempts);
         setIsVerifying(false);
         setError(`अवैध सुरक्षा पासकोड! (Invalid Security Key). प्रयत्न: ${nextAttempts}/5`);
       }
-    }, 450);
+    } catch (err) {
+      setIsVerifying(false);
+      setError('Verification error. Please try again.');
+    }
   };
 
   const handleFounderQuickBiometric = () => {
@@ -57,13 +58,13 @@ export const AdminSecurityGatekeeper = ({
     setTimeout(() => {
       setIsBiometricScanning(false);
       grantAccess('Founder Biometric Authenticated: Bhupesh Indurkar');
-    }, 850);
+    }, 600);
   };
 
   const grantAccess = (method) => {
-    const token = `zeniva_admin_auth_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     try {
-      sessionStorage.setItem('zeniva_admin_auth_token', token);
+      sessionStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
+      localStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
       localStorage.setItem('zeniva_admin_last_login', JSON.stringify({
         timestamp: new Date().toISOString(),
         actor: 'Bhupesh Indurkar (Super Admin)',

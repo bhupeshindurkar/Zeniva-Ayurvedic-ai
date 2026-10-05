@@ -6,6 +6,7 @@ import {
   Stethoscope, ChevronRight, FileCheck, GraduationCap
 } from 'lucide-react';
 import { ZenivaLogo, MeditatingYogi } from '../components/ZenivaIcons';
+import { verifyAdminPassword } from '../lib/adminAuthService';
 
 export const DoctorVerificationStatusView = ({
   doctorProfile: rawDoctorProfile = {},
@@ -223,7 +224,26 @@ export const DoctorVerificationStatusView = ({
 
     setIsAdminLoading(true);
     const trimmedPass = adminPassword.trim();
-    const isMasterAuth = trimmedPass === 'bhupesh@123' || trimmedPass === '2027';
+
+    try {
+      const isCloudValid = await verifyAdminPassword(trimmedPass);
+      if (isCloudValid) {
+        const fakeToken = `zeniva_adm_${Date.now()}`;
+        try {
+          localStorage.setItem('zeniva_admin_token', fakeToken);
+          sessionStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
+          localStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
+        } catch (e) {}
+        setIsAdminModalOpen(false);
+        onAdminAuthenticated({
+          token: fakeToken,
+          role: 'SUPER_ADMIN',
+          user: { name: 'Bhupesh Indurkar (Super Admin)', role: 'SUPER_ADMIN' }
+        });
+        setIsAdminLoading(false);
+        return;
+      }
+    } catch (e) {}
 
     try {
       const adminApiUrl = (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
@@ -241,27 +261,21 @@ export const DoctorVerificationStatusView = ({
       const data = await res.json();
 
       if (res.ok && data.success) {
-        localStorage.setItem('zeniva_admin_token', data.token);
+        try {
+          localStorage.setItem('zeniva_admin_token', data.token);
+          sessionStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
+          localStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
+        } catch (e) {}
         setIsAdminModalOpen(false);
         onAdminAuthenticated(data);
+        setIsAdminLoading(false);
         return;
       }
     } catch (err) {
       // Backend offline fallback handled below
     }
 
-    if (isMasterAuth) {
-      const fakeToken = `zeniva_adm_${Date.now()}`;
-      localStorage.setItem('zeniva_admin_token', fakeToken);
-      setIsAdminModalOpen(false);
-      onAdminAuthenticated({
-        token: fakeToken,
-        role: 'SUPER_ADMIN',
-        user: { name: 'Bhupesh Indurkar (Super Admin)', role: 'SUPER_ADMIN' }
-      });
-    } else {
-      setAdminError('Invalid Admin Password. Access Denied.');
-    }
+    setAdminError('Invalid Admin Password. Access Denied.');
     setIsAdminLoading(false);
   };
 

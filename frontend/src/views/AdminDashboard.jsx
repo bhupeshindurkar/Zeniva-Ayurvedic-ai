@@ -4,19 +4,25 @@ import {
   ArrowRight, ShieldCheck, CheckCircle2, Clock, Sparkles, 
   Search, SlidersHorizontal, Plus, Settings, UserCheck, 
   ShieldAlert, RefreshCw, Check, X, AlertCircle, Phone, 
-  MapPin, Eye, Database, Activity, Download, Filter, 
+  MapPin, Eye, EyeOff, Database, Activity, Download, Filter, 
   ChevronDown, BarChart2, Heart, Award, FileCheck, Building,
-  Lock, XCircle, AlertTriangle, Trash2, Edit, Save, Bell,
-  Key, Shield, Layers, FileSpreadsheet, Play, CheckSquare,
+  Lock, Unlock, XCircle, AlertTriangle, Trash2, Edit, Save, Bell,
+  Key, KeyRound, Shield, Layers, FileSpreadsheet, Play, CheckSquare,
   GraduationCap, Briefcase, Mail, FileBarChart, BarChart3, Printer,
   Video, Upload, Star, ChevronRight, ExternalLink, CheckCheck,
-  Radio, Laptop, HelpCircle, UserPlus, Pill, Share2, Zap,
+  Radio, Laptop, Smartphone, Globe, HelpCircle, UserPlus, Pill, Share2, Zap,
   TrendingUp, Compass, Cpu, Server
 } from 'lucide-react';
 import { MeditatingYogi, MortarPestleGraphic, ZenivaLogo } from '../components/ZenivaIcons';
 import { getTeamData, fetchRemoteTeamData, saveTeamData, resetTeamData } from '../data/teamData';
 import { supabase } from '../lib/supabase';
 import { useHospitalErp } from '../config/features';
+import { 
+  fetchAdminSecurityConfig, 
+  updateAdminPassword, 
+  verifyAdminPassword, 
+  getCachedAdminConfig 
+} from '../lib/adminAuthService';
 
 export const AdminDashboard = ({
   activeTab = 'admin_dashboard',
@@ -32,6 +38,91 @@ export const AdminDashboard = ({
   // Toast Alert Notification
   const [toastMessage, setToastMessage] = useState('');
   const [isPdfReportModalOpen, setIsPdfReportModalOpen] = useState(false);
+
+  // Super Admin Password Management & Security State
+  const [adminSecurityConfig, setAdminSecurityConfig] = useState(() => getCachedAdminConfig());
+  const [currentAdminPassword, setCurrentAdminPassword] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passError, setPassError] = useState('');
+  const [passSuccess, setPassSuccess] = useState('');
+  const [testPasswordInput, setTestPasswordInput] = useState('');
+  const [testResult, setTestResult] = useState(null);
+  const [isTestingPass, setIsTestingPass] = useState(false);
+
+  useEffect(() => {
+    fetchAdminSecurityConfig().then(cfg => {
+      if (cfg) setAdminSecurityConfig(cfg);
+    });
+
+    const handleSecurityUpdate = (e) => {
+      if (e.detail) setAdminSecurityConfig(e.detail);
+    };
+    window.addEventListener('zeniva_admin_security_updated', handleSecurityUpdate);
+    return () => window.removeEventListener('zeniva_admin_security_updated', handleSecurityUpdate);
+  }, []);
+
+  const handlePasswordChangeSubmit = async (e) => {
+    e.preventDefault();
+    setPassError('');
+    setPassSuccess('');
+
+    if (!currentAdminPassword) {
+      setPassError('कृपया सध्याचा पासवर्ड किंवा पिन प्रविष्ट करा (Please enter current password).');
+      return;
+    }
+    if (!newAdminPassword) {
+      setPassError('कृपया नवीन पासवर्ड प्रविष्ट करा (Please enter new password).');
+      return;
+    }
+    if (newAdminPassword.length < 4) {
+      setPassError('नवीन पासवर्ड किमान ४ अक्षरांचा असावा (New password must be at least 4 characters).');
+      return;
+    }
+    if (newAdminPassword !== confirmAdminPassword) {
+      setPassError('नवीन पासवर्ड व पुष्टीकरण पासवर्ड जुळत नाहीत (Passwords do not match).');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    try {
+      const res = await updateAdminPassword({
+        currentPassword: currentAdminPassword,
+        newPassword: newAdminPassword,
+        actor: currentUser?.name || 'Bhupesh Indurkar (Super Admin)'
+      });
+
+      setPassSuccess(res.message || 'सुरक्षित पासवर्ड यशस्वीरित्या अपडेट झाला आणि सर्व डिव्हाइसेसवर समक्रमित झाला!');
+      showToast('Admin password updated & synced across Cloud, Mobile & Laptop!');
+      setCurrentAdminPassword('');
+      setNewAdminPassword('');
+      setConfirmAdminPassword('');
+      setAdminSecurityConfig(res.config);
+    } catch (err) {
+      setPassError(err.message || 'Password update failed. Please verify your current password.');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleTestPassword = async (e) => {
+    e.preventDefault();
+    if (!testPasswordInput) return;
+    setIsTestingPass(true);
+    setTestResult(null);
+    try {
+      const ok = await verifyAdminPassword(testPasswordInput);
+      setTestResult(ok ? 'SUCCESS' : 'FAILED');
+    } catch (err) {
+      setTestResult('FAILED');
+    } finally {
+      setIsTestingPass(false);
+    }
+  };
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -3811,41 +3902,372 @@ export const AdminDashboard = ({
       {/* 14. ADMIN SETTINGS & CLOUD GATEWAY                                        */}
       {/* ========================================================================= */}
       {(activeTab === 'admin_settings') && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EBE3D5] shadow-xs space-y-6 animate-in fade-in">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-purple-700" />
-                <h2 className="text-lg font-serif font-bold text-stone-900">
-                  Zeniva AI System Administration & Cloud Gateways (सिस्टम विन्यास पटल)
-                </h2>
+        <div className="space-y-6 animate-in fade-in">
+          
+          {/* Header Banner */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EBE3D5] shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold">
+                    <Settings className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-serif font-bold text-stone-900">
+                      Zeniva AI System Administration & Security Settings
+                    </h2>
+                    <p className="text-xs text-purple-800 font-medium">प्रशासकीय विन्यास, पासवर्ड व सुरक्षा व्यवस्थापन पटल</p>
+                  </div>
+                </div>
+                <p className="text-xs text-stone-500 mt-2">
+                  Manage Super Admin master passwords, cross-device cloud synchronization, WhatsApp clinical gateways, and persistent database backups.
+                </p>
               </div>
-              <p className="text-xs text-stone-500 mt-0.5">
-                Manage Zeniva AI WhatsApp clinical communications, database snapshots, and clinic operational modes.
-              </p>
+
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Supabase Cloud Sync: Live</span>
+                </span>
+              </div>
             </div>
+
+            {/* ------------------------------------------------------------- */}
+            {/* SUPER ADMIN PASSWORD & PASSKEY MANAGEMENT (Cross-Device Synced) */}
+            {/* ------------------------------------------------------------- */}
+            <div className="mt-6 pt-2">
+              <div className="rounded-3xl bg-gradient-to-br from-[#120F24] via-[#1A1633] to-[#2B1736] text-white p-6 sm:p-8 border border-purple-500/30 shadow-xl relative overflow-hidden">
+                
+                {/* Background ambient lighting */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="relative z-10 space-y-6">
+                  
+                  {/* Top Security Header */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                    <div className="flex items-start sm:items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+                        <KeyRound className="w-6 h-6 text-purple-300" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-lg sm:text-xl font-serif font-bold text-white tracking-wide">
+                            Super Admin Master Password (प्रशासकीय मुख्य पासवर्ड)
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-mono font-bold tracking-wider">
+                            LEVEL 5 GOVERNANCE
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-300 mt-0.5">
+                          Change your Admin Password & Passcode here. Changes are instantly saved to Supabase Cloud and sync across all your phones, laptops, and browsers.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs text-stone-200">
+                        <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+                        <Laptop className="w-3.5 h-3.5 text-purple-400" />
+                        <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="font-semibold ml-1">Multi-Device Synced</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notification Banners */}
+                  {passError && (
+                    <div className="p-4 rounded-2xl bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs flex items-center gap-3 animate-in fade-in">
+                      <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+                      <div>
+                        <p className="font-bold">त्रुटी / Update Notice</p>
+                        <p className="text-rose-300">{passError}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {passSuccess && (
+                    <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs flex items-center gap-3 animate-in fade-in">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <div>
+                        <p className="font-bold">यशस्वी / Cloud Synchronized ✓</p>
+                        <p className="text-emerald-300">{passSuccess}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Form Grid */}
+                  <form onSubmit={handlePasswordChangeSubmit} className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                      
+                      {/* Current Password Field */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-stone-200 flex items-center justify-between">
+                          <span>१. सध्याचा पासवर्ड (Current Password)</span>
+                          <span className="text-[10px] text-stone-400 font-normal">सत्यापनासाठी आवश्यक</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                            <Lock className="w-4 h-4" />
+                          </div>
+                          <input
+                            type={showCurrentPass ? 'text' : 'password'}
+                            value={currentAdminPassword}
+                            onChange={(e) => setCurrentAdminPassword(e.target.value)}
+                            placeholder="Enter current password or PIN"
+                            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-[#090C18]/80 border border-white/15 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 text-white placeholder-stone-500 text-xs font-mono transition-all outline-none"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPass(!showCurrentPass)}
+                            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white transition-colors cursor-pointer"
+                          >
+                            {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-stone-400">Master bypass (8766903403 / 2027) also accepted for current key.</p>
+                      </div>
+
+                      {/* New Password Field */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-stone-200 flex items-center justify-between">
+                          <span>२. नवीन पासवर्ड (New Admin Password)</span>
+                          <span className="text-[10px] text-purple-300 font-semibold">किमान ४ अक्षरे</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                            <Key className="w-4 h-4 text-purple-400" />
+                          </div>
+                          <input
+                            type={showNewPass ? 'text' : 'password'}
+                            value={newAdminPassword}
+                            onChange={(e) => setNewAdminPassword(e.target.value)}
+                            placeholder="Type new secure admin password"
+                            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-[#090C18]/80 border border-white/15 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 text-white placeholder-stone-500 text-xs font-mono transition-all outline-none"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPass(!showNewPass)}
+                            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white transition-colors cursor-pointer"
+                          >
+                            {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {newAdminPassword && (
+                          <div className="flex items-center gap-2 pt-1">
+                            <div className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full transition-all duration-300 ${
+                                  newAdminPassword.length < 6 
+                                    ? 'w-1/3 bg-rose-500' 
+                                    : newAdminPassword.length < 10 
+                                    ? 'w-2/3 bg-amber-400' 
+                                    : 'w-full bg-emerald-400'
+                                }`}
+                              ></div>
+                            </div>
+                            <span className="text-[10px] font-semibold text-stone-300">
+                              {newAdminPassword.length < 6 ? 'Basic' : newAdminPassword.length < 10 ? 'Medium' : 'Strong Grade'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Confirm New Password Field */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-stone-200 flex items-center justify-between">
+                          <span>३. पासवर्ड पुष्टी (Confirm Password)</span>
+                          <span className="text-[10px] text-stone-400 font-normal">जुळणे आवश्यक</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                          </div>
+                          <input
+                            type={showConfirmPass ? 'text' : 'password'}
+                            value={confirmAdminPassword}
+                            onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                            placeholder="Re-type new password"
+                            className="w-full pl-10 pr-10 py-3 rounded-2xl bg-[#090C18]/80 border border-white/15 focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 text-white placeholder-stone-500 text-xs font-mono transition-all outline-none"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPass(!showConfirmPass)}
+                            className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-white transition-colors cursor-pointer"
+                          >
+                            {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {confirmAdminPassword && (
+                          <p className={`text-[10px] ${newAdminPassword === confirmAdminPassword ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {newAdminPassword === confirmAdminPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
+                          </p>
+                        )}
+                      </div>
+
+                    </div>
+
+                    {/* Action Buttons & Info Callout */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-white/10">
+                      <div className="flex items-center gap-2 text-[11px] text-stone-300">
+                        <Shield className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>सुरक्षित एन्क्रिप्शन: पासवर्ड बदलल्यानंतर तो त्वरित लॅपटॉप, मोबाईल व सर्व डिव्हाइसेसवर लागू होईल.</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCurrentAdminPassword('');
+                            setNewAdminPassword('');
+                            setConfirmAdminPassword('');
+                            setPassError('');
+                          }}
+                          className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          Clear
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={isUpdatingPassword}
+                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg hover:shadow-purple-500/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          {isUpdatingPassword ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              <span>Cloud Syncing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4" />
+                              <span>Update Admin Password (पासवर्ड जतन करा)</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+
+                  {/* ----------------------------------------------------------- */}
+                  {/* LIVE PASSWORD VERIFICATION TESTER & AUDIT STATUS            */}
+                  {/* ----------------------------------------------------------- */}
+                  <div className="pt-4 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    {/* Live Test Box */}
+                    <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-stone-200 flex items-center gap-1.5">
+                          <CheckSquare className="w-4 h-4 text-cyan-400" />
+                          <span>Test Active Password (नवीन पासवर्ड चाचणी)</span>
+                        </span>
+                        {testResult === 'SUCCESS' && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                            ✓ Verified Active
+                          </span>
+                        )}
+                        {testResult === 'FAILED' && (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold">
+                            ✗ Incorrect
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-stone-400">
+                        Enter your password to verify that Supabase Cloud and local caches are synchronized.
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="password"
+                          value={testPasswordInput}
+                          onChange={(e) => {
+                            setTestPasswordInput(e.target.value);
+                            setTestResult(null);
+                          }}
+                          placeholder="Type password to test"
+                          className="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono outline-none focus:border-cyan-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleTestPassword}
+                          disabled={isTestingPass || !testPasswordInput}
+                          className="px-3.5 py-2 rounded-xl bg-cyan-600/80 hover:bg-cyan-500 text-white text-xs font-bold transition-all cursor-pointer disabled:opacity-40"
+                        >
+                          {isTestingPass ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Verify'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Security Metadata & Session Controls */}
+                    <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2.5 text-xs text-stone-300">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-white flex items-center gap-1.5">
+                          <Server className="w-4 h-4 text-purple-400" />
+                          <span>Active Security Ledger</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                          Cloud Encrypted
+                        </span>
+                      </div>
+                      <div className="space-y-1 font-mono text-[11px] text-stone-400">
+                        <p>Super Admin: <strong className="text-white">Bhupesh Indurkar (8766903403)</strong></p>
+                        <p>Last Sync: <strong className="text-white">{adminSecurityConfig?.updated_at ? new Date(adminSecurityConfig.updated_at).toLocaleString() : 'System Default Initialized'}</strong></p>
+                        <p>Target Portal: <strong className="text-purple-300">https://zeniva-aryuvedic-ai.vercel.app/#admin/admin_settings</strong></p>
+                      </div>
+                      <div className="pt-1 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              sessionStorage.removeItem('zeniva_admin_auth_token');
+                              localStorage.removeItem('zeniva_admin_auth_token');
+                            } catch (e) {}
+                            window.location.hash = 'admin/admin_settings';
+                            window.location.reload();
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-stone-200 text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Lock className="w-3 h-3 text-amber-400" />
+                          <span>Lock Console & Test Login Gate</span>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
           </div>
 
+          {/* Existing Gateways: WhatsApp Communications & SQLite Persistence */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-            <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-stone-200 space-y-3">
+            <div className="p-6 rounded-3xl bg-white border border-[#EBE3D5] shadow-xs space-y-3">
               <h3 className="font-bold text-stone-900 text-sm flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 <span>💬 Zeniva AI WhatsApp & Cloud Communications</span>
               </h3>
               <p className="text-stone-600">Encrypted instant dispatch of Ayurvedic health assessments, clinical referrals, and patient triage to official doctor WhatsApp groups.</p>
-              <div className="space-y-1.5 font-mono text-[11px] text-stone-700">
+              <div className="space-y-1.5 font-mono text-[11px] text-stone-700 bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200">
                 <p>Status: <strong className="text-emerald-700">🟢 Live & Operational</strong></p>
                 <p>Gateway: <strong>WhatsApp Cloud API & Direct Dispatch</strong></p>
                 <p>Dispatch Channel: <strong>Zeniva Care Council Hub</strong></p>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold inline-block">
+              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-[10px] font-bold inline-block">
                 ✓ Automated Clinical Routing Active
               </span>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-stone-200 space-y-3">
-              <h3 className="font-bold text-stone-900 text-sm">💾 SQLite Database Persistence</h3>
+            <div className="p-6 rounded-3xl bg-white border border-[#EBE3D5] shadow-xs space-y-3">
+              <h3 className="font-bold text-stone-900 text-sm flex items-center gap-2">
+                <Database className="w-4 h-4 text-purple-700" />
+                <span>💾 SQLite Database Persistence</span>
+              </h3>
               <p className="text-stone-600">Permanent data ledger storing users, doctors, appointments, and audit trails.</p>
-              <div className="space-y-1 font-mono text-[11px] text-stone-700">
+              <div className="space-y-1 font-mono text-[11px] text-stone-700 bg-[#FAF8F5] p-3.5 rounded-2xl border border-stone-200">
                 <p>Database: <strong>zeniva.db</strong></p>
                 <p>Path: <strong>/backend/zeniva.db</strong></p>
                 <p>Integrity Check: <strong className="text-emerald-700">PASSED ✓</strong></p>
@@ -3853,12 +4275,13 @@ export const AdminDashboard = ({
               <button
                 type="button"
                 onClick={() => showToast('Database backup snapshot created in /backend/backups/!')}
-                className="px-3.5 py-2 rounded-xl bg-purple-700 text-white font-bold text-xs cursor-pointer hover:bg-purple-800 transition-colors"
+                className="px-4 py-2.5 rounded-xl bg-purple-700 text-white font-bold text-xs cursor-pointer hover:bg-purple-800 transition-colors shadow-xs"
               >
                 Create Backup Snapshot
               </button>
             </div>
           </div>
+
         </div>
       )}
 

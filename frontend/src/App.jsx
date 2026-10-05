@@ -7,6 +7,7 @@ import { AdminDashboard } from './views/AdminDashboard';
 import { LoginPortal } from './views/LoginPortal';
 import { DoctorRegistrationView } from './views/DoctorRegistrationView';
 import { DoctorVerificationStatusView } from './views/DoctorVerificationStatusView';
+import { AdminSecurityGatekeeper } from './views/AdminSecurityGatekeeper';
 import { MyProfileView } from './views/MyProfileView';
 import { DoshaAnalysisView } from './views/DoshaAnalysisView';
 import { SymptomCheckerView } from './views/SymptomCheckerView';
@@ -150,22 +151,24 @@ const parseUrlState = () => {
   // Secure Admin URL verification: Direct typing of admin in URL requires verified token
   if (hash.startsWith('admin')) {
     const adminToken = sessionStorage.getItem('zeniva_admin_auth_token') || localStorage.getItem('zeniva_admin_auth_token');
-    if (adminToken === 'zeniva_master_2027') {
-      const parts = hash.split('/');
+    const isValidAdmin = adminToken && (
+      adminToken === 'zeniva_master_2027' || 
+      adminToken.startsWith('zeniva_adm') || 
+      adminToken.startsWith('zeniva_admin_')
+    );
+    const parts = hash.split('/');
+    const targetTab = parts[1] || 'admin_dashboard';
+    if (isValidAdmin) {
       return {
         role: 'admin',
         authView: 'authenticated',
-        tab: parts[1] || 'admin_dashboard'
+        tab: targetTab
       };
     }
-    try {
-      window.history.replaceState(null, '', '#overview/home');
-    } catch (e) {}
-    window.location.hash = 'overview/home';
     return {
-      role: 'public',
-      authView: 'authenticated',
-      tab: 'home'
+      role: 'admin',
+      authView: 'admin_gatekeeper',
+      tab: targetTab
     };
   }
 
@@ -418,21 +421,6 @@ export default function App() {
   // Sync state with URL hash changes
   useEffect(() => {
     const handleHashChange = () => {
-      const rawHash = window.location.hash.replace('#', '').toLowerCase();
-      if (rawHash.startsWith('admin')) {
-        const adminToken = sessionStorage.getItem('zeniva_admin_auth_token') || localStorage.getItem('zeniva_admin_auth_token');
-        if (adminToken !== 'zeniva_master_2027') {
-          try {
-            window.history.replaceState(null, '', '#overview/home');
-          } catch (e) {}
-          window.location.hash = 'overview/home';
-          setCurrentRole('public');
-          setAuthView('authenticated');
-          setActiveTab('home');
-          return;
-        }
-      }
-
       const nextState = parseUrlState();
       setCurrentRole(nextState.role);
       setAuthView(nextState.authView);
@@ -461,6 +449,8 @@ export default function App() {
       window.location.hash = 'doctor/register';
     } else if (authView === 'doctor_status') {
       window.location.hash = 'doctor/status';
+    } else if (authView === 'admin_gatekeeper') {
+      window.location.hash = `admin/${activeTab || 'admin_dashboard'}`;
     } else if (currentRole === 'admin') {
       window.location.hash = `admin/${activeTab || 'admin_dashboard'}`;
     } else if (currentRole === 'doctor') {
@@ -853,6 +843,31 @@ export default function App() {
     setRegisteredDoctorProfile(profile);
     setAuthView('doctor_status');
   };
+
+  // 0. Super Admin Security Gatekeeper View (When opening #admin/... directly without active session)
+  if (authView === 'admin_gatekeeper') {
+    return (
+      <AdminSecurityGatekeeper
+        targetTab={activeTab || 'admin_dashboard'}
+        onAuthenticated={(adminUser) => {
+          handleLoginSuccess({
+            ...(adminUser || {}),
+            role: 'admin',
+            id: 'usr_admin',
+            name: 'Bhupesh Indurkar (Super Admin)',
+            phone: '8766903403',
+            title: 'Super Administrator'
+          });
+        }}
+        onCancel={() => {
+          window.location.hash = 'overview/home';
+          setCurrentRole('public');
+          setAuthView('authenticated');
+          setActiveTab('home');
+        }}
+      />
+    );
+  }
 
   // 1. Doctor Registration Form View (No splash screen)
   if (authView === 'doctor_registration') {

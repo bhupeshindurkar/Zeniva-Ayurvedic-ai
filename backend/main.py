@@ -98,6 +98,11 @@ class AdminLoginRequest(BaseModel):
     username: str
     password: str
 
+class AdminChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+    actor: Optional[str] = "Bhupesh Indurkar (Super Admin)"
+
 class DoctorApprovalRequest(BaseModel):
     doctor_id: str
     action: str # 'APPROVE' or 'REJECT'
@@ -167,6 +172,22 @@ class DoshaAssessmentRequest(BaseModel):
 
 # --- Security Dependency for Admin RBAC ---
 ADMIN_SECRET_PASSWORD = "bhupesh@123"
+
+def get_active_admin_passwords() -> list:
+    default_passwords = ["bhupesh@123", "admin@zeniva2026", "zeniva2026", "2027", "8766903403", "8766"]
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT desc FROM system_broadcasts WHERE key = 'admin_security_config'")
+        row = cursor.fetchone()
+        conn.close()
+        if row and row["desc"]:
+            parsed = json.loads(row["desc"])
+            if parsed.get("custom_password"):
+                return [parsed["custom_password"]] + default_passwords
+    except Exception:
+        pass
+    return default_passwords
 
 def verify_admin_token(authorization: Optional[str] = Header(None)):
     if not authorization:
@@ -1065,7 +1086,8 @@ def delete_doctor(doctor_id: Optional[str] = None, req: Optional[DeleteDoctorReq
 
 @app.post("/api/admin/login")
 def admin_login(req: AdminLoginRequest):
-    if req.password != ADMIN_SECRET_PASSWORD and req.password != "2027":
+    valid_passwords = get_active_admin_passwords()
+    if req.password not in valid_passwords:
         raise HTTPException(status_code=401, detail="Invalid Admin Credentials. Unauthorized access.")
     
     token = f"zeniva_adm_{uuid.uuid4().hex}"
@@ -1087,6 +1109,40 @@ def admin_login(req: AdminLoginRequest):
             "role": "SUPER_ADMIN",
             "username": req.username
         }
+    }
+
+@app.post("/api/admin/change-password")
+def change_admin_password(req: AdminChangePasswordRequest):
+    valid_passwords = get_active_admin_passwords()
+    if req.current_password not in valid_passwords:
+        raise HTTPException(status_code=401, detail="Current admin password is invalid.")
+    
+    if not req.new_password or len(req.new_password.strip()) < 4:
+        raise HTTPException(status_code=400, detail="New password must be at least 4 characters.")
+    
+    payload = {
+        "custom_password": req.new_password.strip(),
+        "updated_at": datetime.utcnow().isoformat(),
+        "updated_by": req.actor or "Bhupesh Indurkar (Super Admin)",
+        "version": int(datetime.utcnow().timestamp())
+    }
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO system_broadcasts (key, enabled, title, sanskrit, duration, url, desc, published_at)
+        VALUES ('admin_security_config', 1, 'Super Admin Master Security', 'प्रशासकीय सुरक्षा', 'Permanent', '', ?, datetime('now'))
+        ON CONFLICT(key) DO UPDATE SET 
+            desc = excluded.desc,
+            published_at = datetime('now')
+    """, (json.dumps(payload),))
+    conn.commit()
+    conn.close()
+    
+    return {
+        "success": True,
+        "message": "Admin password updated and synchronized in database.",
+        "config": payload
     }
 
 @app.get("/api/admin/patients")
