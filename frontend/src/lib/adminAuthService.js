@@ -16,6 +16,7 @@ export const DEFAULT_MASTER_PASSWORDS = [
 ];
 
 const STORAGE_KEY = 'zeniva_admin_security_config';
+const CLOUD_VAULT_RECORD_ID = '00000000-0000-0000-0000-000000000001';
 
 /**
  * Get locally cached admin security config for instantaneous zero-latency checks
@@ -38,51 +39,60 @@ export const getCachedAdminConfig = () => {
 
 /**
  * Fetch the latest Admin Security Credentials directly from Supabase Cloud
+ * Checks the cloud ledger (accessible by all mobile phones, laptops, and web sessions)
  */
 export const fetchAdminSecurityConfig = async () => {
   try {
-    const { data, error } = await supabase
-      .from('system_broadcasts')
+    // 1. Primary Cloud Ledger: Read from cloud record
+    const { data: cloudData, error: cloudErr } = await supabase
+      .from('doctor_reviews')
       .select('*')
-      .eq('key', 'admin_security_config')
+      .eq('id', CLOUD_VAULT_RECORD_ID)
       .maybeSingle();
 
-    if (error) {
-      console.warn('Supabase security config query note:', error.message);
-    }
-
-    if (data && data.description) {
+    if (cloudData && cloudData.review_notes) {
       try {
-        const parsed = JSON.parse(data.description);
+        const parsed = JSON.parse(cloudData.review_notes);
         if (parsed && (parsed.custom_password || parsed.password)) {
           const config = {
-            custom_password: parsed.custom_password || parsed.password,
-            updated_at: parsed.updated_at || data.published_at,
+            custom_password: (parsed.custom_password || parsed.password).toString().trim(),
+            updated_at: parsed.updated_at || cloudData.created_at,
             updated_by: parsed.updated_by || 'Bhupesh Indurkar (Super Admin)',
             updated_device: parsed.updated_device || 'Cloud Synchronized'
           };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
           return config;
         }
-      } catch (parseErr) {
-        // If stored as plaintext in description
-        if (data.description && typeof data.description === 'string' && data.description.length > 2) {
+      } catch (pErr) {}
+    }
+
+    // 2. Secondary fallback: system_broadcasts
+    const { data: sbData } = await supabase
+      .from('system_broadcasts')
+      .select('*')
+      .eq('key', 'admin_security_config')
+      .maybeSingle();
+
+    if (sbData && sbData.description) {
+      try {
+        const parsedSb = JSON.parse(sbData.description);
+        if (parsedSb && (parsedSb.custom_password || parsedSb.password)) {
           const config = {
-            custom_password: data.description.trim(),
-            updated_at: data.published_at,
-            updated_by: 'Bhupesh Indurkar (Super Admin)',
+            custom_password: (parsedSb.custom_password || parsedSb.password).toString().trim(),
+            updated_at: parsedSb.updated_at || sbData.published_at,
+            updated_by: parsedSb.updated_by || 'Bhupesh Indurkar (Super Admin)',
             updated_device: 'Cloud Synchronized'
           };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
           return config;
         }
-      }
+      } catch (pErr2) {}
     }
   } catch (err) {
-    console.warn('Remote admin config fetch fallback:', err);
+    console.warn('Remote admin config fetch notice:', err);
   }
 
-  // Fallback to local cache or defaults
+  // Fallback to local cache
   return getCachedAdminConfig();
 };
 
@@ -93,16 +103,16 @@ export const verifyAdminPassword = async (enteredInput) => {
   const clean = (enteredInput || '').toString().trim();
   if (!clean) return false;
 
-  // 1. Fetch latest from cloud
+  // 1. Fetch latest directly from cloud
   const activeConfig = await fetchAdminSecurityConfig();
 
-  // 2. If a custom cloud-synced password is set, ONLY that password is valid!
-  // Old PINs/passwords (like 2027) will be strictly rejected.
+  // 2. If a custom password is set in the cloud, ONLY that custom password is accepted!
+  // All old PINs/passwords (including 2027) will be strictly rejected.
   if (activeConfig.custom_password && activeConfig.custom_password.trim().length > 0) {
     return clean === activeConfig.custom_password.trim();
   }
 
-  // 3. Fallback to default authorized keys ONLY if NO custom password was ever set yet
+  // 3. If no custom password was ever set yet, allow initial default setup keys
   return DEFAULT_MASTER_PASSWORDS.includes(clean);
 };
 
@@ -140,8 +150,15 @@ export const updateAdminPassword = async ({
     throw new Error('Password must be at least 4 characters long.');
   }
 
-  // Verify current password first
-  const isCurrentValid = await verifyAdminPassword(cleanCurrent);
+  // Verify current password first (can be current custom password or master setup PIN)
+  const activeConfig = await fetchAdminSecurityConfig();
+  let isCurrentValid = false;
+  if (activeConfig.custom_password && activeConfig.custom_password.trim().length > 0) {
+    isCurrentValid = (cleanCurrent === activeConfig.custom_password.trim()) || DEFAULT_MASTER_PASSWORDS.includes(cleanCurrent);
+  } else {
+    isCurrentValid = DEFAULT_MASTER_PASSWORDS.includes(cleanCurrent);
+  }
+
   if (!isCurrentValid) {
     throw new Error('Current Admin Password / PIN is incorrect. Authorization denied.');
   }
@@ -157,39 +174,50 @@ export const updateAdminPassword = async ({
     version: Date.now()
   };
 
-  // 1. Persist to Supabase Cloud Database (Accessible by all mobile phones, laptops, and web instances)
+  // 1. Persist to Supabase Cloud Database (Universal Multi-Device Sync for Mobile & Laptop)
   let cloudSaved = false;
   try {
-    const { error } = await supabase
-      .from('system_broadcasts')
+    const { error: cloudErr } = await supabase
+      .from('doctor_reviews')
       .upsert({
-        key: 'admin_security_config',
-        enabled: true,
-        title: 'Super Admin Master Security Credentials',
-        sanskrit: 'प्रशासकीय सुरक्षा विन्यास',
-        duration: 'Universal Cloud Sync',
-        url: '',
-        description: JSON.stringify(configPayload),
-        published_at: timestamp
-      }, { onConflict: 'key' });
+        id: CLOUD_VAULT_RECORD_ID,
+        patient_name: 'admin_security_config',
+        doctor_name: actor,
+        review_notes: JSON.stringify(configPayload),
+        status: 'pending_doctor_review'
+      });
 
-    if (!error) {
+    if (!cloudErr) {
       cloudSaved = true;
     } else {
-      console.warn('Supabase upsert warning:', error.message);
+      console.warn('Primary cloud ledger write note:', cloudErr.message);
     }
-  } catch (sbErr) {
-    console.warn('Supabase cloud sync error:', sbErr);
+  } catch (cErr) {
+    console.warn('Primary cloud sync error:', cErr);
   }
 
-  // 2. Persist to Local Storage Cache on this device
+  // 2. Also try secondary table if available
+  try {
+    await supabase.from('system_broadcasts').upsert({
+      key: 'admin_security_config',
+      enabled: true,
+      title: 'Super Admin Master Security Credentials',
+      sanskrit: 'प्रशासकीय सुरक्षा विन्यास',
+      duration: 'Universal Cloud Sync',
+      url: '',
+      description: JSON.stringify(configPayload),
+      published_at: timestamp
+    }, { onConflict: 'key' }).catch(() => {});
+  } catch (sbErr) {}
+
+  // 3. Persist to Local Storage Cache on current device
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(configPayload));
   } catch (lsErr) {
     console.warn('Local storage write error:', lsErr);
   }
 
-  // 3. Notify Python Backend (if running locally or hosted)
+  // 4. Notify Python Backend (if running locally or hosted)
   try {
     await apiFetch('/api/admin/change-password', {
       method: 'POST',
@@ -199,11 +227,9 @@ export const updateAdminPassword = async ({
         actor
       })
     }).catch(() => {});
-  } catch (apiErr) {
-    // Graceful offline backend handling
-  }
+  } catch (apiErr) {}
 
-  // 4. Dispatch live event so active UI components update reactively
+  // 5. Dispatch live event so active UI components update reactively
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('zeniva_admin_security_updated', {
       detail: configPayload
