@@ -4026,7 +4026,7 @@ export const AdminDashboard = ({
                             {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
-                        <p className="text-[10px] text-stone-400">Master bypass (8766903403 / 2027) also accepted for current key.</p>
+                        <p className="text-[10px] text-stone-400">Enter your active password (or initial PIN if first time).</p>
                       </div>
 
                       {/* New Password Field */}

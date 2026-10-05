@@ -96,25 +96,14 @@ export const verifyAdminPassword = async (enteredInput) => {
   // 1. Fetch latest from cloud
   const activeConfig = await fetchAdminSecurityConfig();
 
-  // 2. Check against custom cloud-synced password if set
-  if (activeConfig.custom_password) {
-    if (clean === activeConfig.custom_password.trim()) {
-      return true;
-    }
+  // 2. If a custom cloud-synced password is set, ONLY that password is valid!
+  // Old PINs/passwords (like 2027) will be strictly rejected.
+  if (activeConfig.custom_password && activeConfig.custom_password.trim().length > 0) {
+    return clean === activeConfig.custom_password.trim();
   }
 
-  // 3. Check against default authorized keys (if no custom password or master emergency bypass)
-  if (DEFAULT_MASTER_PASSWORDS.includes(clean)) {
-    return true;
-  }
-
-  // 4. Also check against local cached config
-  const cached = getCachedAdminConfig();
-  if (cached.custom_password && clean === cached.custom_password.trim()) {
-    return true;
-  }
-
-  return false;
+  // 3. Fallback to default authorized keys ONLY if NO custom password was ever set yet
+  return DEFAULT_MASTER_PASSWORDS.includes(clean);
 };
 
 /**
@@ -125,8 +114,8 @@ export const verifyAdminPasswordSync = (enteredInput) => {
   if (!clean) return false;
 
   const cached = getCachedAdminConfig();
-  if (cached.custom_password && clean === cached.custom_password.trim()) {
-    return true;
+  if (cached.custom_password && cached.custom_password.trim().length > 0) {
+    return clean === cached.custom_password.trim();
   }
 
   return DEFAULT_MASTER_PASSWORDS.includes(clean);

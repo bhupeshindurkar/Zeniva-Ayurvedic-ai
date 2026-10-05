@@ -183,8 +183,8 @@ def get_active_admin_passwords() -> list:
         conn.close()
         if row and row["desc"]:
             parsed = json.loads(row["desc"])
-            if parsed.get("custom_password"):
-                return [parsed["custom_password"]] + default_passwords
+            if parsed.get("custom_password") and parsed["custom_password"].strip():
+                return [parsed["custom_password"].strip()]
     except Exception:
         pass
     return default_passwords

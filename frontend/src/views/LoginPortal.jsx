@@ -679,7 +679,7 @@ export const LoginPortal = ({
     
     try {
       const isValid = await verifyAdminPassword(cleanPin);
-      if (isValid || cleanPin === '2027' || cleanPin === 'admin@zeniva2026' || cleanPin === '8766903403') {
+      if (isValid) {
         setSuccessMessage('✓ Super Admin Key Verified! Launching Command Center...');
         try {
           sessionStorage.setItem('zeniva_admin_auth_token', 'zeniva_master_2027');
